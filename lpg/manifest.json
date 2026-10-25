@@ -1,0 +1,319 @@
+{
+  "dataset": "Censo da Educação Superior 2024",
+  "ano": 2024,
+  "fonte": "INEP/MEC - Microdados do Censo da Educação Superior 2024",
+  "gerado_em": "2026-10-25T13:29:02.093689+00:00",
+  "formato_csv": "neo4j-admin import",
+  "encoding": "utf-8",
+  "delimiter": ",",
+  "quebra_linha": "LF",
+  "colunas_origem": {
+    "cursos": 223,
+    "ies": 84,
+    "qt_cursos": 193
+  },
+  "resumo": {
+    "linhas_curso_lidas": 720349,
+    "ofertas_unicas": 720349,
+    "ofertas_sem_municipio": 11778,
+    "cursos_unicos": 46150,
+    "cursos_sem_grau": 378,
+    "ies_unicas": 2561,
+    "municipios": 3551,
+    "ufs": 27,
+    "regioes": 5,
+    "mantenedoras": 1755,
+    "cine_rotulos": 353,
+    "cine_areas_detalhadas": 89,
+    "cine_areas_especificas": 39,
+    "cine_areas_gerais": 11,
+    "divergencias_ies": 0,
+    "municipios_capital_misto": 0,
+    "controle": {
+      "QT_CONC": 1333988,
+      "QT_CONC_FEM": 793161,
+      "QT_CONC_MASC": 540827,
+      "QT_ING": 5010613,
+      "QT_ING_FEM": 2994997,
+      "QT_ING_MASC": 2015616,
+      "QT_MAT": 10227266,
+      "QT_MAT_FEM": 6088602,
+      "QT_MAT_MASC": 4138664,
+      "QT_VG_TOTAL": 23665419
+    },
+    "distribuicoes": {
+      "TP_DIMENSAO": {
+        "1": 34824,
+        "2": 673756,
+        "3": 11319,
+        "4": 450
+      },
+      "TP_MODALIDADE_ENSINO": {
+        "1": 34824,
+        "2": 685525
+      },
+      "TP_GRAU_ACADEMICO": {
+        "1": 27453,
+        "2": 7789,
+        "3": 10530,
+        "NA": 378
+      },
+      "TP_NIVEL_ACADEMICO": {
+        "1": 46146,
+        "2": 4
+      },
+      "TP_REDE_IES": {
+        "1": 317,
+        "2": 2244
+      },
+      "TP_CATEGORIA_ADMINISTRATIVA_IES": {
+        "1": 122,
+        "2": 139,
+        "3": 28,
+        "4": 1486,
+        "5": 758,
+        "7": 28
+      },
+      "TP_ORGANIZACAO_ACADEMICA_IES": {
+        "1": 206,
+        "2": 417,
+        "3": 1897,
+        "4": 39,
+        "5": 2
+      }
+    }
+  },
+  "nos": {
+    "nos/geografia/regiao.csv": {
+      "label": "Regiao",
+      "linhas": 5,
+      "bytes": 161,
+      "sha256": "bc58824255a0b7fe00abf6d4dda86dc02e9540c01ad5e237b63e56e29f9f3a72"
+    },
+    "nos/geografia/uf.csv": {
+      "label": "UF",
+      "linhas": 27,
+      "bytes": 790,
+      "sha256": "d341462fd17f5c3d81ed1a023824ac9f45fdbe388bfcb31446ec5737a7ca340d"
+    },
+    "nos/geografia/municipio.csv": {
+      "label": "Municipio",
+      "linhas": 3551,
+      "bytes": 215107,
+      "sha256": "b2f977f2525faeffc1610eff06be38f71ac8670db1b798bf357ec62eaf261269"
+    },
+    "nos/institucional/ies.csv": {
+      "label": "IES",
+      "linhas": 2561,
+      "bytes": 1143629,
+      "sha256": "bf451fddbdf0ee27c8b1453e9a2228487ab0c6955342a8bbd4af3504270a7c12"
+    },
+    "nos/institucional/mantenedora.csv": {
+      "label": "Mantenedora",
+      "linhas": 1755,
+      "bytes": 137396,
+      "sha256": "35e69800676358636f3f3610134daf3c6111fcefd4f744f10fdac224f6cd8553"
+    },
+    "nos/academico/curso.csv": {
+      "label": "Curso",
+      "linhas": 46150,
+      "bytes": 9183765,
+      "sha256": "3e98e895605937b5fd83af6155512747b04ab048e84e362572899f8cccfada5f"
+    },
+    "nos/academico/oferta_curso.csv": {
+      "label": "OfertaCurso",
+      "linhas": 720349,
+      "bytes": 337734280,
+      "sha256": "92dc90540a33dbb4aa3d58b96991a09ee139f6c37c98fb432b2f047ed1e4f8cc"
+    },
+    "nos/classificacoes/cine_area_geral.csv": {
+      "label": "CineAreaGeral",
+      "linhas": 11,
+      "bytes": 817,
+      "sha256": "d7a8c6d60a9caae9885c44d6d7fc69223ec02b7a18a835100f8e49b2adba6da9"
+    },
+    "nos/classificacoes/cine_area_especifica.csv": {
+      "label": "CineAreaEspecifica",
+      "linhas": 39,
+      "bytes": 3639,
+      "sha256": "b2d007280c222c47c82a5c9b783b2bb33b03befa291f98ff7acd880b1c2ba235"
+    },
+    "nos/classificacoes/cine_area_detalhada.csv": {
+      "label": "CineAreaDetalhada",
+      "linhas": 89,
+      "bytes": 7987,
+      "sha256": "76b8808cfafef8b25b27014c70654bfb524988bad7cdb4ce639fcde2aa608410"
+    },
+    "nos/classificacoes/cine_rotulo.csv": {
+      "label": "CineRotulo",
+      "linhas": 353,
+      "bytes": 25058,
+      "sha256": "1d7f0e487c965f2055414e350ec847a93cbe3f7b284d32229733d7031379bcbe"
+    },
+    "nos/classificacoes/grau_academico.csv": {
+      "label": "GrauAcademico",
+      "linhas": 4,
+      "bytes": 175,
+      "sha256": "e53484c8c58c0aaf3ca98b204e7ac29bcd0d1bb3ae84038950e8236e605b0375"
+    },
+    "nos/classificacoes/modalidade_ensino.csv": {
+      "label": "ModalidadeEnsino",
+      "linhas": 2,
+      "bytes": 147,
+      "sha256": "cf81724ae8689616d54540892f7216460ab9446959806f630e961eabc4726d5c"
+    },
+    "nos/classificacoes/nivel_academico.csv": {
+      "label": "NivelAcademico",
+      "linhas": 2,
+      "bytes": 148,
+      "sha256": "efa8e4b6509839c342445ea9a9fc00116ae69e410e8f9bc0742527947c19291f"
+    },
+    "nos/classificacoes/organizacao_academica.csv": {
+      "label": "OrganizacaoAcademica",
+      "linhas": 5,
+      "bytes": 390,
+      "sha256": "afa249abe83b3bdd1f508509713f28090b0839aea4170320a18b3fb6905bb51b"
+    },
+    "nos/classificacoes/rede.csv": {
+      "label": "Rede",
+      "linhas": 2,
+      "bytes": 72,
+      "sha256": "01f902986c7f6288848f573eb945b86b0aa1cb02b366a9ec9b144a3753cc810f"
+    },
+    "nos/classificacoes/categoria_administrativa.csv": {
+      "label": "CategoriaAdministrativa",
+      "linhas": 6,
+      "bytes": 414,
+      "sha256": "01820bb8b810155d14c8dba992d2eb055a6a115786be6d2b2c5445441396b91a"
+    },
+    "nos/classificacoes/dimensao_geografica.csv": {
+      "label": "DimensaoGeografica",
+      "linhas": 4,
+      "bytes": 463,
+      "sha256": "ca23e59e84b621ec009366fd01e8c4eb44cfc1e8741e8fac24519a0e521902ef"
+    }
+  },
+  "arestas": {
+    "arestas/geografia/uf_pertence_regiao.csv": {
+      "tipo": "PERTENCE_A_REGIAO",
+      "linhas": 27,
+      "bytes": 915,
+      "sha256": "11c9a590b4dbdfb9c7ec5b94327541dc24e36f17218fe860074aaacf0dee35f0"
+    },
+    "arestas/geografia/municipio_pertence_uf.csv": {
+      "tipo": "PERTENCE_A_UF",
+      "linhas": 3551,
+      "bytes": 134962,
+      "sha256": "0bb908b49453598f69b42205f4e55aa8021ccdf5010d872ce0a964242b5c3f24"
+    },
+    "arestas/institucional/ies_sediada_em_municipio.csv": {
+      "tipo": "SEDIADA_EM",
+      "linhas": 2561,
+      "bytes": 97902,
+      "sha256": "6b63581625229441e8f013dfa8a48addc817d0c173498b7087316d00d7c908cf"
+    },
+    "arestas/institucional/ies_mantida_por_mantenedora.csv": {
+      "tipo": "MANTIDA_POR",
+      "linhas": 2561,
+      "bytes": 98014,
+      "sha256": "24c08b2736eca6bc8e8c699e4a598d849ac8f95e69ec5553d0e0859d89ae7197"
+    },
+    "arestas/institucional/ies_tem_organizacao_academica.csv": {
+      "tipo": "TEM_ORGANIZACAO_ACADEMICA",
+      "linhas": 2561,
+      "bytes": 126073,
+      "sha256": "522e79f88dfe0df52a5c38d590a502cb08e6bfe2f3c078a99e7e4468044e496c"
+    },
+    "arestas/institucional/ies_tem_categoria_administrativa.csv": {
+      "tipo": "TEM_CATEGORIA_ADMINISTRATIVA",
+      "linhas": 2561,
+      "bytes": 128634,
+      "sha256": "4bfb6d390ea5f2d43cb495334ad7b22cb4c8bee2cb6ef8beba9d8b6d164eeac1"
+    },
+    "arestas/institucional/ies_pertence_rede.csv": {
+      "tipo": "PERTENCE_A_REDE",
+      "linhas": 2561,
+      "bytes": 82536,
+      "sha256": "eb0c463ba996d024abaff2f40b28d3d6b7e6b6a5524baa1ae60a557be2864149"
+    },
+    "arestas/academico/curso_ofertado_por_ies.csv": {
+      "tipo": "OFERTADO_POR",
+      "linhas": 46150,
+      "bytes": 1821056,
+      "sha256": "e176c58ab0bc950d82ccd489f2867921d892416056b19c170c8d05e827f698a0"
+    },
+    "arestas/academico/curso_tem_grau_academico.csv": {
+      "tipo": "TEM_GRAU_ACADEMICO",
+      "linhas": 46150,
+      "bytes": 2026671,
+      "sha256": "c2a29ca2405d3ea7a45f6cfb0187f2ec34076378177f592c578a8773a4780af0"
+    },
+    "arestas/academico/curso_tem_nivel_academico.csv": {
+      "tipo": "TEM_NIVEL_ACADEMICO",
+      "linhas": 46150,
+      "bytes": 2118593,
+      "sha256": "a31656147f5611da79d4406d06358c8b53ace70a64d283163cf0b073ab2197ad"
+    },
+    "arestas/academico/curso_classificado_em_cine_rotulo.csv": {
+      "tipo": "CLASSIFICADO_EM",
+      "linhas": 46150,
+      "bytes": 2487793,
+      "sha256": "0369663434144ecf05c19fef9a9f64284c9b0727eadd73127aea7d7ed40e7a4c"
+    },
+    "arestas/academico/oferta_curso_oferta_de.csv": {
+      "tipo": "OFERTA_DE",
+      "linhas": 720349,
+      "bytes": 43120901,
+      "sha256": "d632d8556d36e8be1059958b81063ca65d92b5f17432e0200c080e95c602eaa7"
+    },
+    "arestas/academico/oferta_curso_ofertada_por_ies.csv": {
+      "tipo": "OFERTADA_POR",
+      "linhas": 720349,
+      "bytes": 38202051,
+      "sha256": "675df050406888aa6bb5f27f79e663ac557795fb4ebde9fbf59666c5912806b8"
+    },
+    "arestas/academico/oferta_curso_localizada_em_municipio.csv": {
+      "tipo": "LOCALIZADA_EM",
+      "linhas": 708571,
+      "bytes": 44943786,
+      "sha256": "31961348982929a2c20acd9075d674885cc167738a64a2a73dc5a4f0f7356265"
+    },
+    "arestas/academico/oferta_curso_tem_modalidade_ensino.csv": {
+      "tipo": "TEM_MODALIDADE_ENSINO",
+      "linhas": 720349,
+      "bytes": 47853201,
+      "sha256": "6cfee8cfd50af7c71b33c8a4bc291dd1de816c6724a67f029a126f032d9d0320"
+    },
+    "arestas/academico/oferta_curso_tem_dimensao_geografica.csv": {
+      "tipo": "TEM_DIMENSAO_GEOGRAFICA",
+      "linhas": 720349,
+      "bytes": 47853201,
+      "sha256": "5e5da84807e7a83d259066d7f86dc5f3cd8a7a2de3997c0bc29cd9d9a7ad0999"
+    },
+    "arestas/classificacoes/cine_rotulo_pertence_area_detalhada.csv": {
+      "tipo": "PERTENCE_A_AREA_DETALHADA",
+      "linhas": 353,
+      "bytes": 25087,
+      "sha256": "3a0badf642a0dd8b14fe00b20d380b27aaab54c1f9bfaa5fcd9eadc9926417f5"
+    },
+    "arestas/classificacoes/cine_area_detalhada_pertence_area_especifica.csv": {
+      "tipo": "PERTENCE_A_AREA_ESPECIFICA",
+      "linhas": 89,
+      "bytes": 6877,
+      "sha256": "ae2bfb350919e9cd05aaecd9b4791704c22082581c73b9e3f7c8b8bca16e7e43"
+    },
+    "arestas/classificacoes/cine_area_especifica_pertence_area_geral.csv": {
+      "tipo": "PERTENCE_A_AREA_GERAL",
+      "linhas": 39,
+      "bytes": 2598,
+      "sha256": "0024febdb9ac0ab4f3ef3bcc73bc55e6cfdce94eaa5febef79d9804ca19ddb99"
+    }
+  },
+  "totais": {
+    "nos": 774915,
+    "arestas": 3791431,
+    "arquivos_nos": 18,
+    "arquivos_arestas": 19
+  },
+  "avisos": []
+}
