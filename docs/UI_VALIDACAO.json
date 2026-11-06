@@ -1,0 +1,11 @@
+{
+  "pages_loaded": [
+    "Explorar dados",
+    "Importar",
+    "Sobre o projeto",
+    "Consultar"
+  ],
+  "query_submitted": true,
+  "expected_offers_joao_pessoa": 67,
+  "exception_count": 0
+}
