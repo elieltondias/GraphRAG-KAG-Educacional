@@ -23,7 +23,7 @@ def download(path):
     print('Repositório e Git LFS baixados na revisão fixada:',COMMIT)
 
 def main():
-    parser=argparse.ArgumentParser(description='NexoEdu · FalkorDB / GraphRAG')
+    parser=argparse.ArgumentParser(description='NexoEdu · Neo4j / GraphRAG')
     sub=parser.add_subparsers(dest='command',required=True)
     p=sub.add_parser('download');p.add_argument('--path',default='data/repositorio')
     p=sub.add_parser('ingest');p.add_argument('--path',default='data/sample/lpg');p.add_argument('--scope',choices=['amostra','completa'],default='amostra');p.add_argument('--graph')

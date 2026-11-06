@@ -1,7 +1,7 @@
 import re
 import time
-from falkordb import FalkorDB
-from redis.exceptions import ResponseError
+from neo4j import GraphDatabase
+from neo4j.exceptions import Neo4jError
 from src.config import Settings
 from src.embeddings import DIMENSION
 
@@ -10,78 +10,130 @@ def identifier(value):
         raise ValueError(f'Identificador inválido: {value!r}')
     return value
 
+# Constraints e índices do modelo LPG no Neo4j 5 Community.
+# Unicidade composta (id, graph): o mesmo ID pode existir em grafos lógicos
+# diferentes, que são partições isoladas dentro do mesmo servidor.
+# Obrigatoriedade de id/graph é garantida pela camada de ingestão (Store.upsert_nodes):
+# constraints de existência de propriedade (IS NOT NULL) exigem Neo4j Enterprise.
+# Índices fulltext e vetoriais são criados POR GRAFO LÓGICO: cada nó recebe também o
+# rótulo com o nome do grafo, para que a busca aproximada (top-k) não concorra com nós
+# de outros grafos antes do filtro de partição.
+def base_ddl():
+    return [
+        'CREATE CONSTRAINT entity_uniq IF NOT EXISTS FOR (n:Entity) REQUIRE (n.id, n.graph) IS UNIQUE',
+        'CREATE INDEX entity_id_idx IF NOT EXISTS FOR (n:Entity) ON (n.id)',
+        'CREATE INDEX entity_name_norm_idx IF NOT EXISTS FOR (n:Entity) ON (n.name_norm)',
+    ]
+
+def graph_ddl(graph):
+    graph = identifier(graph)
+    return [
+        f'CREATE FULLTEXT INDEX entity_search_{graph} IF NOT EXISTS FOR (n:{graph}) ON EACH [n.search_text]',
+        f'CREATE VECTOR INDEX entity_embedding_{graph} IF NOT EXISTS FOR (n:{graph}) ON (n.embedding) OPTIONS '
+        + "{indexConfig: {`vector.dimensions`: %d, `vector.similarity_function`: 'cosine', "
+          "`vector.quantization.enabled`: false}}" % DIMENSION,
+        # Índices globais de versões anteriores desta entrega; removidos se existirem.
+        'DROP INDEX entity_search IF EXISTS',
+        'DROP INDEX entity_embedding IF EXISTS',
+    ]
+
 class Store:
-    def __init__(self, settings=None, client=None):
+    """Acesso ao Neo4j: schema, escrita parametrizada e leitura com rastro de auditoria."""
+
+    def __init__(self, settings=None, driver=None):
         self.settings = settings or Settings()
-        self.client = client or FalkorDB(host=self.settings.host, port=self.settings.port,
-                                       password=self.settings.password or None,
-                                       socket_connect_timeout=5, socket_timeout=180)
-        self.graph = self.client.select_graph(self.settings.graph)
+        identifier(self.settings.graph)
+        self.driver = driver or GraphDatabase.driver(
+            self.settings.uri,
+            auth=(self.settings.user, self.settings.password or None),
+            connection_timeout=5)
         self.trace = []
 
     def query(self, cypher, params=None, write=False):
-        result = (self.graph.query if write else self.graph.ro_query)(cypher, params or {}, timeout=120000)
+        data = dict(params or {})
+        data.setdefault('graph', self.settings.graph)
+        with self.driver.session(database=self.settings.database) as session:
+            rows = [dict(record) for record in session.run(cypher, data)]
         if not write:
-            self.trace.append({'cypher': cypher, 'params': params or {}})
-        names = [h[1] for h in result.header]
-        return [dict(zip(names, row)) for row in result.result_set]
+            self.trace.append({'cypher': cypher, 'params': data})
+        return rows
 
     def schema(self):
-        queries = [
-            'CREATE INDEX FOR (n:Entity) ON (n.id)',
-            'CREATE INDEX FOR (n:Entity) ON (n.name_norm)',
-            "CALL db.idx.fulltext.createNodeIndex('Entity', 'search_text')",
-            f"CREATE VECTOR INDEX FOR (n:Entity) ON (n.embedding) OPTIONS {{dimension:{DIMENSION}, similarityFunction:'cosine'}}",
-        ]
-        for q in queries:
+        for statement in base_ddl() + graph_ddl(self.settings.graph):
             try:
-                self.query(q, write=True)
-            except ResponseError as e:
-                if 'already indexed' not in str(e).lower() and 'already exists' not in str(e).lower():
+                self.query(statement, write=True)
+            except Neo4jError as error:
+                message = str(error).lower()
+                if 'already exists' not in message and 'equivalent' not in message:
                     raise
-        existing = self.query('CALL db.constraints()')
-        for kind in ['UNIQUE', 'MANDATORY']:
-            if not any(r.get('type') == kind and r.get('label') == 'Entity' and r.get('properties') == ['id'] for r in existing):
-                self.client.execute_command('GRAPH.CONSTRAINT', 'CREATE', self.settings.graph, kind, 'NODE', 'Entity', 'PROPERTIES', 1, 'id')
         self.wait_ready()
 
-    def wait_ready(self):
-        deadline = time.monotonic() + 120
+    def wait_ready(self, timeout=120):
+        deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
-            constraints = self.query('CALL db.constraints()')
-            indexes = self.query('CALL db.indexes()')
-            states = [str(r.get('status', '')).upper() for r in constraints + indexes]
-            if any(s == 'FAILED' for s in states):
-                raise RuntimeError('Falha ao construir índice/constraint. Veja db.indexes e db.constraints.')
-            if all(s in {'OPERATIONAL', 'ONLINE'} for s in states):
+            rows = self.query('SHOW INDEXES YIELD name, state, failureMessage '
+                              'RETURN name, state, failureMessage')
+            states = [str(row.get('state') or '').upper() for row in rows]
+            failed = [row for row, state in zip(rows, states) if state == 'FAILED']
+            if failed:
+                raise RuntimeError(f'Falha ao construir índice/constraint: {failed}')
+            if rows and all(state == 'ONLINE' for state in states):
                 return
-            time.sleep(0.2)
+            time.sleep(0.3)
         raise TimeoutError('Índices/constraints ainda não estão prontos.')
 
     def metadata(self):
-        try:
-            rows = self.query('MATCH (m:Metadata {id:$id}) RETURN properties(m) AS data', {'id':'dataset'})
-            return rows[0]['data'] if rows else {}
-        except ResponseError as e:
-            if 'does not exist' in str(e).lower() or 'empty key' in str(e).lower():
-                return {}
-            raise
+        rows = self.query('MATCH (m:Metadata {id:$id, graph:$graph}) RETURN properties(m) AS data',
+                          {'id': 'dataset'})
+        return rows[0]['data'] if rows else {}
 
     def set_metadata(self, data):
-        self.query('MERGE (m:Metadata {id:$id}) SET m += $data', {'id':'dataset', 'data':data}, write=True)
+        self.query('MERGE (m:Metadata {id:$id, graph:$graph}) SET m += $data',
+                   {'id': 'dataset', 'data': data}, write=True)
 
     def upsert_nodes(self, label, rows):
         label = identifier(label)
-        self.query(f'UNWIND $rows AS row MERGE (n:Entity:{label} {{id:row.id}}) SET n += row.props', {'rows':rows}, write=True)
+        graph_label = identifier(self.settings.graph)
+        payload = []
+        for row in rows:
+            if not row.get('id') or not row.get('props'):
+                raise ValueError('Nó sem id ou sem propriedades. Obrigatório para todo nó do grafo.')
+            payload.append({'id': row['id'], 'graph': self.settings.graph, 'props': row['props']})
+        self.query(
+            f'UNWIND $rows AS row MERGE (n:Entity:{label}:{graph_label} {{id:row.id, graph:row.graph}}) '
+            f'SET n += row.props', {'rows': payload}, write=True)
 
-    def upsert_edges(self, kind, rows):
+    def upsert_edges(self, kind, rows, props=False):
         kind = identifier(kind)
-        result = self.query(f'UNWIND $rows AS row MATCH (a:Entity {{id:row.source}}), (b:Entity {{id:row.target}}) MERGE (a)-[r:{kind}]->(b) RETURN count(r) AS matched', {'rows':rows}, write=True)
+        set_props = ' SET r += row.props' if props else ''
+        payload = [{**row, 'graph': self.settings.graph} for row in rows]
+        result = self.query(
+            'UNWIND $rows AS row '
+            'MATCH (a:Entity {id:row.source, graph:row.graph}), '
+            '(b:Entity {id:row.target, graph:row.graph}) '
+            f'MERGE (a)-[r:{kind}]->(b){set_props} RETURN count(r) AS matched',
+            {'rows': payload}, write=True)
         if result[0]['matched'] != len(rows):
             raise ValueError(f'Relações {kind} com origem/destino ausente. Importação incompleta.')
+        return result[0]['matched']
 
     def vectors(self, rows):
-        self.query('UNWIND $rows AS row MATCH (n:Entity {id:row.id}) SET n.embedding=vecf32(row.vector)', {'rows':rows}, write=True)
+        payload = [{**row, 'graph': self.settings.graph} for row in rows]
+        self.query('UNWIND $rows AS row '
+                   'MATCH (n:Entity {id:row.id, graph:row.graph}) '
+                   'SET n.embedding = row.vector', {'rows': payload}, write=True)
 
     def stats(self):
-        return self.query('MATCH (n:Entity) RETURN n.kind AS tipo, count(n) AS quantidade ORDER BY quantidade DESC')
+        return self.query('MATCH (n:Entity) WHERE n.graph=$graph '
+                          'RETURN n.kind AS tipo, count(n) AS quantidade ORDER BY quantidade DESC')
+
+    def count_nodes(self):
+        rows = self.query('MATCH (n:Entity) WHERE n.graph=$graph RETURN count(n) AS n')
+        return rows[0]['n']
+
+    def wipe(self):
+        """Remove apenas o grafo lógico atual (usado pelos testes de integração)."""
+        self.query('MATCH (n) WHERE n.graph=$graph DETACH DELETE n', write=True)
+
+    def close(self):
+        self.driver.close()

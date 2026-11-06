@@ -3,6 +3,7 @@ import re
 from dataclasses import dataclass, asdict
 import networkx as nx
 from src.embeddings import Embedder, normalize, tokens
+from src.store import identifier
 
 @dataclass
 class Filters:
@@ -16,7 +17,8 @@ BASE = '''MATCH (o:OfertaCurso)-[:OFERTA_DE]->(c:Curso)
 MATCH (o)-[:OFERTADA_POR]->(i:IES)
 OPTIONAL MATCH (o)-[:LOCALIZADA_EM]->(m:Municipio)-[:PERTENCE_A_UF]->(u:UF)
 WITH o,c,i,m,u
-WHERE ($uf='' OR u.SG_UF=$uf)
+WHERE o.graph=$graph
+AND ($uf='' OR u.SG_UF=$uf)
 AND ($municipio='' OR m.name_norm CONTAINS $municipio)
 AND ($curso='' OR c.name_norm CONTAINS $curso)
 AND ($ies='' OR i.name_norm CONTAINS $ies OR toLower(i.SG_IES)=$ies)
@@ -31,12 +33,24 @@ TOTAL = BASE + '''RETURN count(DISTINCT o) AS ofertas,count(DISTINCT c) AS curso
 count(DISTINCT i) AS instituicoes,sum(coalesce(o.QT_MAT,0)) AS matriculas,
 sum(coalesce(o.QT_ING,0)) AS ingressantes,sum(coalesce(o.QT_CONC,0)) AS concluintes'''
 
-VECTOR = "CALL db.idx.vector.queryNodes('Entity','embedding',$k,vecf32($vector)) YIELD node,score RETURN node.id AS id,node.name AS name,score ORDER BY score ASC"
-EXACT = "MATCH (n:Entity {name_norm:$name}) RETURN n.id AS id,n.name AS name ORDER BY n.id LIMIT 12"
-LEXICAL = "CALL db.idx.fulltext.queryNodes('Entity',$text) YIELD node,score RETURN node.id AS id,node.name AS name,score ORDER BY score DESC LIMIT 12"
-PATHS = '''MATCH p=(a:Entity {id:$id})-[*1..2]-(b:Entity)
+# Neo4j: score do índice vetorial é similaridade de cosseno mapeada para [0,1]
+# (score = (1 + cosseno)/2 com quantização desligada), maior é melhor.
+# Índices fulltext/vetoriais são POR GRAFO LÓGICO (rótulo = nome do grafo), para que
+# o top-k aproximado não concorra com nós de outras partições.
+def vector_query(graph):
+    graph = identifier(graph)
+    return (f"CALL db.index.vector.queryNodes('entity_embedding_{graph}',$k,$vector) YIELD node,score "
+            f"WHERE node.graph=$graph RETURN node.id AS id,node.name AS name,score ORDER BY score DESC")
+
+def lexical_query(graph):
+    graph = identifier(graph)
+    return (f"CALL db.index.fulltext.queryNodes('entity_search_{graph}',$text) YIELD node,score "
+            f"WHERE node.graph=$graph RETURN node.id AS id,node.name AS name,score ORDER BY score DESC LIMIT 12")
+
+EXACT = "MATCH (n:Entity {name_norm:$name, graph:$graph}) RETURN n.id AS id,n.name AS name ORDER BY n.id LIMIT 12"
+PATHS = '''MATCH p=(a:Entity {id:$id, graph:$graph})-[*1..2]-(b:Entity)
 WHERE a.id<>b.id RETURN p LIMIT 60'''
-OFFER_PATH = '''MATCH p=(o:OfertaCurso {id:$id})-[:OFERTA_DE]->(c:Curso)-[:OFERTADO_POR]->(i:IES)
+OFFER_PATH = '''MATCH p=(o:OfertaCurso {id:$id, graph:$graph})-[:OFERTA_DE]->(c:Curso)-[:OFERTADO_POR]->(i:IES)
 RETURN p LIMIT 1'''
 
 
@@ -59,38 +73,50 @@ def filter_params(filters):
     return p
 
 def graph_context(paths):
+    """Constroi o subgrafo de contexto a partir dos caminhos Neo4j recuperados."""
     nodes = {}
     edges = {}
-    evidence = []
-    path_records = []
+    records = []
+    seen = set()
     for record in paths:
-        p = record['p']
-        path_nodes = list(p.nodes())
-        path_edges = list(p.edges())
+        path = record['p']
+        path_nodes = list(path.nodes)
+        path_rels = list(path.relationships)
         for n in path_nodes:
-            props = n.properties
-            nodes[n.id] = {'id':str(n.id),'key':props.get('id',''),'name':props.get('name',''),
-                           'kind':props.get('kind',''),'source':props.get('source_file','')}
-        parts = [path_nodes[0].properties.get('name','?')]
-        for e,n in zip(path_edges,path_nodes[1:]):
-            edges[e.id] = {'id':str(e.id),'source':str(e.src_node),'target':str(e.dest_node),'type':e.relation}
-            direction = '→' if e.src_node == path_nodes[len(parts)//2].id else '←'
-            parts.extend([f'{direction} {e.relation}',n.properties.get('name','?')])
+            props = dict(n)
+            nodes[n.element_id] = {'id':n.element_id,'key':props.get('id',''),'name':props.get('name',''),
+                                   'kind':props.get('kind',''),'source':props.get('source_file',''),
+                                   'pagerank':0.0,'community':props.get('community'),
+                                   'importance':props.get('pagerank')}
+        parts = [dict(path_nodes[0]).get('name','?')]
+        previous = path_nodes[0]
+        for rel, node in zip(path_rels, path_nodes[1:]):
+            props = dict(node)
+            edges[rel.element_id] = {'id':rel.element_id,'source':rel.start_node.element_id,
+                                     'target':rel.end_node.element_id,'type':rel.type}
+            direction = '→' if rel.start_node.element_id == previous.element_id else '←'
+            parts.extend([f'{direction} {rel.type}',props.get('name','?')])
+            previous = node
         text = ' '.join(parts)
-        if text not in evidence:
-            evidence.append(text)
-            path_records.append({'path':text,'node_ids':[str(n.id) for n in path_nodes],
-                'snippets':[{'source':n.properties.get('source_file',''),'page':n.properties.get('page',1),'text':n.properties['text']} for n in path_nodes if n.properties.get('text')]})
+        if text in seen:
+            continue
+        seen.add(text)
+        records.append({'path':text,'node_ids':[n.element_id for n in path_nodes],
+            'snippets':[{'source':props.get('source_file',''),'page':props.get('page',1),'text':props['text']}
+                        for props in (dict(n) for n in path_nodes) if props.get('text')]})
     graph = nx.DiGraph()
     for n in nodes.values():
         graph.add_node(n['id'])
     for e in edges.values():
         graph.add_edge(e['source'],e['target'])
     ranks = nx.pagerank(graph) if graph else {}
+    by_id = {n['id']:n for n in nodes.values()}
     for n in nodes.values():
-        n['pagerank'] = ranks.get(n['id'],0)
-    path_records.sort(key=lambda p:-sum(ranks.get(i,0) for i in p['node_ids']))
-    return {'nodes':list(nodes.values()),'edges':list(edges.values()),'paths':[p['path'] for p in path_records],'path_records':path_records}
+        n['pagerank'] = float(ranks.get(n['id'],0) or 0)
+    records.sort(key=lambda p:-sum((by_id[i].get('importance') or by_id[i]['pagerank'] or 0)
+                                   for i in p['node_ids']))
+    return {'nodes':list(nodes.values()),'edges':list(edges.values()),
+            'paths':[p['path'] for p in records],'path_records':records}
 
 def structured(store, filters):
     params = filter_params(filters)
@@ -109,8 +135,8 @@ def retrieve(store, question, filters=None, mode='hybrid'):
         raise ValueError('O modelo configurado difere do usado na importação.')
     store.trace = []
     terms = tokens(question)[:20]
-    lexical = store.query(LEXICAL,{'text':' | '.join(terms)}) if terms and mode != 'vector' else []
-    vector = store.query(VECTOR,{'vector':embedder.encode([question])[0],'k':12}) if mode != 'lexical' else []
+    lexical = store.query(lexical_query(store.settings.graph),{'text':' | '.join(terms)}) if terms and mode != 'vector' else []
+    vector = store.query(vector_query(store.settings.graph),{'vector':embedder.encode([question])[0],'k':12}) if mode != 'lexical' else []
     exact = store.query(EXACT,{'name':normalize(question.strip())}) if mode != 'vector' else []
     anchors = [r['id'] for r in exact]
     seeds = list(dict.fromkeys(anchors + rrf([lexical,vector])))[:4]

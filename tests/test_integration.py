@@ -7,9 +7,9 @@ from src.config import Settings
 from src.store import Store
 from src.ingest import ingest_lpg
 from src.documents import ingest_document
-from src.retrieval import retrieve, structured, Filters, deterministic_answer
+from src.retrieval import retrieve, structured, Filters, deterministic_answer, vector_query
 
-pytestmark=pytest.mark.skipif(os.getenv('RUN_INTEGRATION')!='1',reason='Use RUN_INTEGRATION=1 com FalkorDB ativo')
+pytestmark=pytest.mark.skipif(os.getenv('RUN_INTEGRATION')!='1',reason='Use RUN_INTEGRATION=1 com Neo4j ativo')
 ROOT=Path(__file__).resolve().parents[1]
 
 @pytest.fixture(scope='module')
@@ -18,7 +18,8 @@ def store():
     store=Store(settings)
     ingest_lpg(store,ROOT/'data/sample/lpg','amostra',progress=lambda _:None)
     yield store
-    store.graph.delete()
+    store.wipe()
+    store.close()
 
 
 def test_real_counts_and_idempotency(store):
@@ -29,7 +30,7 @@ def test_real_counts_and_idempotency(store):
     before=store.stats()
     ingest_lpg(store,ROOT/'data/sample/lpg','amostra',progress=lambda _:None)
     assert store.stats()==before
-    assert store.query('MATCH ()-[r]->() RETURN count(r) AS n')[0]['n']==3101
+    assert store.query('MATCH (a:Entity)-[r]->(b:Entity) WHERE a.graph=$graph RETURN count(r) AS n')[0]['n']==3101
 
 
 def test_hybrid_multi_hop_and_provenance(store):
@@ -41,8 +42,8 @@ def test_hybrid_multi_hop_and_provenance(store):
     assert all(n['source'] for n in result['graph']['nodes'])
     assert all(n['pagerank']>0 for n in result['graph']['nodes'])
     assert 'Amostra' in deterministic_answer(result)
-    assert any('db.idx.vector.queryNodes' in q['cypher'] for q in result['trace'])
-    assert any('db.idx.fulltext.queryNodes' in q['cypher'] for q in result['trace'])
+    assert any('db.index.vector.queryNodes' in q['cypher'] for q in result['trace'])
+    assert any('db.index.fulltext.queryNodes' in q['cypher'] for q in result['trace'])
 
 
 def test_query_injection_does_not_mutate(store):
@@ -52,11 +53,30 @@ def test_query_injection_does_not_mutate(store):
 
 
 def test_constraints_enforced(store):
-    from redis.exceptions import ResponseError
-    with pytest.raises(ResponseError):
-        store.query("CREATE (:Entity {id:'2024:uf_25'})",write=True)
-    with pytest.raises(ResponseError):
-        store.query("CREATE (:Entity {kind:'SemID'})",write=True)
+    from neo4j.exceptions import Neo4jError
+    with pytest.raises(Neo4jError):
+        store.query("CREATE (:Entity {id:'2024:uf_25', graph:$graph})",write=True)
+    with pytest.raises(ValueError):
+        store.upsert_nodes('Teste',[{'props':{'name':'sem id'}}])
+
+
+def test_graph_partition_keeps_same_id_in_isolated_graph():
+    from neo4j.exceptions import Neo4jError
+    a=Store(replace(Settings(),graph='part_a_'+uuid.uuid4().hex,embedding='hash'))
+    b=Store(replace(Settings(),graph='part_b_'+uuid.uuid4().hex,embedding='hash'))
+    try:
+        a.schema(); b.schema()
+        row={'id':'particao:1','props':{'id':'particao:1','name':'nó','kind':'Teste'}}
+        a.upsert_nodes('Teste',[row])
+        b.upsert_nodes('Teste',[row])
+        assert a.query("MATCH (n:Entity {id:'particao:1', graph:$graph}) RETURN count(n) AS n")[0]['n']==1
+        assert b.query("MATCH (n:Entity {id:'particao:1', graph:$graph}) RETURN count(n) AS n")[0]['n']==1
+        assert a.query("MATCH (n:Entity {id:'particao:1'}) RETURN count(n) AS n")[0]['n']==2
+        with pytest.raises(Neo4jError):
+            a.query("CREATE (:Entity {id:'particao:1', graph:$graph})",write=True)
+    finally:
+        a.wipe(); a.close()
+        b.wipe(); b.close()
 
 
 def test_documents_mentions_and_text_retrievable(store):
@@ -67,7 +87,7 @@ def test_documents_mentions_and_text_retrievable(store):
     assert first['mencoes']==1
     result=retrieve(store,'documento didático João Pessoa',mode='lexical')
     assert any(e['snippets'] for e in result['evidence'])
-    assert store.query('MATCH (n:Trecho) RETURN count(n) AS n')[0]['n']==1
+    assert store.query('MATCH (n:Trecho) WHERE n.graph=$graph RETURN count(n) AS n')[0]['n']==1
 
 
 def test_scope_or_embedding_mismatch_rejected(store):
@@ -75,8 +95,8 @@ def test_scope_or_embedding_mismatch_rejected(store):
         ingest_lpg(store,ROOT/'data/sample/lpg','completa',progress=lambda _:None)
 
 
-def test_vector_ranking_uses_distance_ascending():
-    from src.retrieval import VECTOR
+def test_vector_ranking_by_cosine_similarity():
+    import time
     s=Store(replace(Settings(),graph='vetor_'+uuid.uuid4().hex,embedding='hash'))
     try:
         s.schema()
@@ -84,8 +104,16 @@ def test_vector_ranking_uses_distance_ascending():
         s.upsert_nodes('Teste',[{'id':k,'props':{'id':k,'name':k,'kind':'Teste'}} for k in vectors])
         s.vectors([{'id':k,'vector':v} for k,v in vectors.items()])
         s.wait_ready()
-        rows=s.query(VECTOR,{'vector':vectors['igual'],'k':3})
+        rows=[]
+        for _ in range(20):
+            rows=s.query(vector_query(s.settings.graph),{'vector':vectors['igual'],'k':3})
+            if len(rows)==3:
+                break
+            time.sleep(0.25)
         assert [r['id'] for r in rows]==['igual','ortogonal','oposto']
-        assert rows[0]['score']==pytest.approx(0,abs=1e-6)
+        assert rows[0]['score']==pytest.approx(1.0,abs=1e-6)
+        assert rows[1]['score']==pytest.approx(0.5,abs=1e-6)
+        assert rows[2]['score']==pytest.approx(0.0,abs=1e-6)
     finally:
-        s.graph.delete()
+        s.wipe()
+        s.close()

@@ -28,16 +28,20 @@ with st.sidebar:
     st.divider()
     page = st.radio('Área de trabalho',['Consultar','Explorar dados','Importar','Sobre o projeto'],label_visibility='collapsed')
     st.divider()
-    st.caption(f'Banco: FalkorDB\n\nGrafo: {settings.graph}\n\nEmbeddings: {settings.embedding}')
+    st.caption(f'Banco: Neo4j 5\n\nGrafo lógico: {settings.graph}\n\nEmbeddings: {settings.embedding}')
     st.caption('LLM conectado por configuração' if llm.enabled else 'Modo sem LLM · evidências e cálculos')
 
 st.title(page if page!='Consultar' else 'Conhecimento que conecta a educação')
 st.caption('Censo da Educação Superior 2024 · instituições, cursos, ofertas e território')
 try:
-    store = Store(settings)
+    store_key = (settings.uri, settings.user, settings.password, settings.database, settings.graph)
+    if st.session_state.get('store_key') != store_key:
+        st.session_state['store'] = Store(settings)
+        st.session_state['store_key'] = store_key
+    store = st.session_state['store']
     meta = store.metadata()
 except Exception as error:
-    st.error('Não foi possível conectar ao FalkorDB. Inicie o servidor com docker compose up -d falkordb.')
+    st.error('Não foi possível conectar ao Neo4j. Inicie o servidor com docker compose up -d neo4j.')
     with st.expander('Detalhes da conexão'):
         st.code(str(error))
     st.stop()
@@ -106,8 +110,8 @@ if page=='Importar':
     if ready:
         with st.expander('Índices, restrições e metadados'):
             st.json(meta)
-            st.dataframe(pd.DataFrame(store.query('CALL db.indexes()')),hide_index=True)
-            st.dataframe(pd.DataFrame(store.query('CALL db.constraints()')),hide_index=True)
+            st.dataframe(pd.DataFrame(store.query('SHOW INDEXES')),hide_index=True)
+            st.dataframe(pd.DataFrame(store.query('SHOW CONSTRAINTS')),hide_index=True)
 
 elif page=='Consultar':
     st.write('Faça uma pergunta, acompanhe as evidências e explore o caminho até a fonte.')
@@ -195,9 +199,9 @@ elif page=='Explorar dados':
 
 else:
     st.subheader('Microdados conectados, respostas rastreáveis')
-    st.write('Projeto acadêmico de GraphRAG/KAG aplicado ao Censo da Educação Superior. Banco: FalkorDB, conforme orientação do professor. A especificação original cita Neo4j; a equivalência está documentada em docs/REQUISITOS.md.')
-    st.markdown('**Pipeline:** CSV LPG → validação e resolução por ID → FalkorDB → texto + embeddings → fusão de rankings → travessia de até 2 saltos → evidências → resposta opcional com LLM.')
+    st.write('Projeto acadêmico de GraphRAG/KAG aplicado ao Censo da Educação Superior, sobre Neo4j 5 com modelo Labeled Property Graph: constraints de unicidade, índices de propriedade, full-text e vetorial (cosseno).')
+    st.markdown('**Pipeline:** CSV LPG → validação e resolução por ID → Neo4j → texto + embeddings → fusão de rankings → travessia de até 2 saltos → evidências → resposta opcional com LLM.')
     st.write('Documentos são divididos em trechos, reconhecidos por dicionário de entidades e ligados por MENCIONA. Esse extrator não inventa relações como “oferece” a partir da presença de duas palavras.')
     st.write('A leitura pode ocorrer sem LLM. Embeddings semânticos usam um modelo multilíngue local. O modo hash é apenas uma linha de base lexical, sem compreensão semântica.')
-    st.markdown('[Repositório dos dados](https://github.com/elieltondias/GraphRAG-KAG-Educacional) · [Documentação FalkorDB](https://docs.falkordb.com/)')
+    st.markdown('[Repositório dos dados](https://github.com/elieltondias/GraphRAG-KAG-Educacional) · [Documentação Neo4j](https://neo4j.com/docs/)')
     st.caption('Protótipo acadêmico local. O relatório de testes, a metodologia de avaliação e o roteiro de defesa estão na pasta docs/.')

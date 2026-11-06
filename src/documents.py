@@ -60,7 +60,7 @@ def ingest_document(store, name, content):
     doc_id = 'doc:'+digest
     props = {'id':doc_id,'kind':'Documento','name':name,'name_norm':normalize(name),'source_file':name,'sha256':digest}
     store.upsert_nodes('Documento',[{'id':doc_id,'props':props}])
-    catalog = store.query("MATCH (n:Entity) WHERE n.kind IN ['IES','Curso','Municipio','UF','Regiao'] RETURN n.id AS id,n.name AS name,n.SG_IES AS alias")
+    catalog = store.query("MATCH (n:Entity) WHERE n.graph=$graph AND n.kind IN ['IES','Curso','Municipio','UF','Regiao'] RETURN n.id AS id,n.name AS name,n.SG_IES AS alias")
     count = mentions_count = 0
     ambiguities = set()
     for page,text in pages:

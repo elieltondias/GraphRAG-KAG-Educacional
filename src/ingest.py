@@ -62,6 +62,8 @@ def ingest_lpg(store, path, scope, embedder=None, progress=print):
     store.schema()
     store.set_metadata({'scope':scope,'year':2024,'embedding_model':embedder.identity,'status':'importando','source':str(path),'fingerprint':fingerprint})
     node_count = edge_count = 0
+    labels_seen = set()
+    types_seen = set()
     for p in files:
         progress(f'Importando nós: {p.name}')
         with p.open(encoding='utf-8-sig', newline='') as f:
@@ -70,6 +72,7 @@ def ingest_lpg(store, path, scope, embedder=None, progress=print):
                 for row in batch:
                     props = typed_row(row)
                     label = identifier(row[':LABEL'])
+                    labels_seen.add(label)
                     raw_id = row[':ID']
                     name = next((str(props[k]) for k in NAMES if props.get(k)), raw_id)
                     props.update({'id':f'2024:{raw_id}','original_id':raw_id,'kind':label,'name':name,'name_norm':normalize(name),
@@ -86,7 +89,9 @@ def ingest_lpg(store, path, scope, embedder=None, progress=print):
             for batch in batched(csv.DictReader(f), 500):
                 by_type = defaultdict(list)
                 for row in batch:
-                    by_type[identifier(row[':TYPE'])].append({'source':'2024:'+row[':START_ID'],'target':'2024:'+row[':END_ID']})
+                    kind = identifier(row[':TYPE'])
+                    types_seen.add(kind)
+                    by_type[kind].append({'source':'2024:'+row[':START_ID'],'target':'2024:'+row[':END_ID']})
                 for kind, rows in by_type.items():
                     store.upsert_edges(kind, rows)
                 edge_count += len(batch)
@@ -94,7 +99,7 @@ def ingest_lpg(store, path, scope, embedder=None, progress=print):
     for label in sorted(SEARCHABLE):
         last = ''
         while True:
-            rows = store.query('MATCH (n:Entity) WHERE n.kind=$label AND n.id>$last RETURN n.id AS id,n.embedding_text AS text ORDER BY n.id LIMIT 64', {'label':label,'last':last})
+            rows = store.query('MATCH (n:Entity) WHERE n.graph=$graph AND n.kind=$label AND n.id>$last RETURN n.id AS id,n.embedding_text AS text ORDER BY n.id LIMIT 64', {'label':label,'last':last})
             if not rows:
                 break
             vectors = embedder.encode([r['text'] for r in rows])
@@ -102,7 +107,8 @@ def ingest_lpg(store, path, scope, embedder=None, progress=print):
             last = rows[-1]['id']
     store.wait_ready()
     result = {'scope':scope,'year':2024,'status':'pronto','embedding_model':embedder.identity,
-              'nodes_imported':node_count,'edges_imported':edge_count,'source':str(path),'fingerprint':fingerprint}
+              'nodes_imported':node_count,'edges_imported':edge_count,'source':str(path),'fingerprint':fingerprint,
+              'labels':sorted(labels_seen),'relacoes':sorted(types_seen)}
     store.set_metadata(result)
     progress(json.dumps(result,ensure_ascii=False))
     return result
