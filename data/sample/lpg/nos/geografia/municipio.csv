@@ -1,0 +1,72 @@
+:ID,:LABEL,CO_MUNICIPIO,NO_MUNICIPIO,CO_UF,SG_UF,IN_CAPITAL:boolean
+municipio_2304400,Municipio,2304400,Fortaleza,23,CE,true
+municipio_2312908,Municipio,2312908,Sobral,23,CE,false
+municipio_2408102,Municipio,2408102,Natal,24,RN,true
+municipio_2500304,Municipio,2500304,Alagoa Grande,25,PB,false
+municipio_2500601,Municipio,2500601,Alhandra,25,PB,false
+municipio_2500908,Municipio,2500908,Arara,25,PB,false
+municipio_2501005,Municipio,2501005,Araruna,25,PB,false
+municipio_2501104,Municipio,2501104,Areia,25,PB,false
+municipio_2501807,Municipio,2501807,Bayeux,25,PB,false
+municipio_2503209,Municipio,2503209,Cabedelo,25,PB,false
+municipio_2503704,Municipio,2503704,Cajazeiras,25,PB,false
+municipio_2504009,Municipio,2504009,Campina Grande,25,PB,false
+municipio_2504306,Municipio,2504306,Catolé do Rocha,25,PB,false
+municipio_2504405,Municipio,2504405,Conceição,25,PB,false
+municipio_2504801,Municipio,2504801,Coremas,25,PB,false
+municipio_2504900,Municipio,2504900,Cruz do Espírito Santo,25,PB,false
+municipio_2505105,Municipio,2505105,Cuité,25,PB,false
+municipio_2505238,Municipio,2505238,Cuité de Mamanguape,25,PB,false
+municipio_2506004,Municipio,2506004,Esperança,25,PB,false
+municipio_2506301,Municipio,2506301,Guarabira,25,PB,false
+municipio_2506905,Municipio,2506905,Itabaiana,25,PB,false
+municipio_2507002,Municipio,2507002,Itaporanga,25,PB,false
+municipio_2507309,Municipio,2507309,Jacaraú,25,PB,false
+municipio_2507507,Municipio,2507507,João Pessoa,25,PB,true
+municipio_2507606,Municipio,2507606,Juarez Távora,25,PB,false
+municipio_2508000,Municipio,2508000,Juru,25,PB,false
+municipio_2508208,Municipio,2508208,Lagoa de Dentro,25,PB,false
+municipio_2508703,Municipio,2508703,Mãe d'Água,25,PB,false
+municipio_2508901,Municipio,2508901,Mamanguape,25,PB,false
+municipio_2509156,Municipio,2509156,Marizópolis,25,PB,false
+municipio_2509701,Municipio,2509701,Monteiro,25,PB,false
+municipio_2510808,Municipio,2510808,Patos,25,PB,false
+municipio_2511202,Municipio,2511202,Pedras de Fogo,25,PB,false
+municipio_2511301,Municipio,2511301,Piancó,25,PB,false
+municipio_2511400,Municipio,2511400,Picuí,25,PB,false
+municipio_2512101,Municipio,2512101,Pombal,25,PB,false
+municipio_2512507,Municipio,2512507,Queimadas,25,PB,false
+municipio_2512903,Municipio,2512903,Rio Tinto,25,PB,false
+municipio_2513109,Municipio,2513109,Salgado de São Félix,25,PB,false
+municipio_2513406,Municipio,2513406,Santa Luzia,25,PB,false
+municipio_2513703,Municipio,2513703,Santa Rita,25,PB,false
+municipio_2513802,Municipio,2513802,Santa Teresinha,25,PB,false
+municipio_2513901,Municipio,2513901,São Bento,25,PB,false
+municipio_2514503,Municipio,2514503,São José de Piranhas,25,PB,false
+municipio_2515302,Municipio,2515302,Sapé,25,PB,false
+municipio_2516003,Municipio,2516003,Solânea,25,PB,false
+municipio_2516201,Municipio,2516201,Sousa,25,PB,false
+municipio_2516300,Municipio,2516300,Sumé,25,PB,false
+municipio_2516508,Municipio,2516508,Taperoá,25,PB,false
+municipio_2516607,Municipio,2516607,Tavares,25,PB,false
+municipio_2517001,Municipio,2517001,Umbuzeiro,25,PB,false
+municipio_2604106,Municipio,2604106,Caruaru,26,PE,false
+municipio_2611606,Municipio,2611606,Recife,26,PE,true
+municipio_3170107,Municipio,3170107,Uberaba,31,MG,false
+municipio_3205002,Municipio,3205002,Serra,32,ES,false
+municipio_3303302,Municipio,3303302,Niterói,33,RJ,false
+municipio_3304557,Municipio,3304557,Rio de Janeiro,33,RJ,true
+municipio_3505906,Municipio,3505906,Batatais,35,SP,false
+municipio_3518800,Municipio,3518800,Guarulhos,35,SP,false
+municipio_3543402,Municipio,3543402,Ribeirão Preto,35,SP,false
+municipio_3549904,Municipio,3549904,São José dos Campos,35,SP,false
+municipio_3550308,Municipio,3550308,São Paulo,35,SP,true
+municipio_4106902,Municipio,4106902,Curitiba,41,PR,true
+municipio_4113700,Municipio,4113700,Londrina,41,PR,false
+municipio_4115200,Municipio,4115200,Maringá,41,PR,false
+municipio_4118402,Municipio,4118402,Paranavaí,41,PR,false
+municipio_4207502,Municipio,4207502,Indaial,42,SC,false
+municipio_4209300,Municipio,4209300,Lages,42,SC,false
+municipio_4216602,Municipio,4216602,São José,42,SC,false
+municipio_5002704,Municipio,5002704,Campo Grande,50,MS,true
+municipio_5300108,Municipio,5300108,Brasília,53,DF,true

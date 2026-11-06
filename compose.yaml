@@ -1,0 +1,38 @@
+services:
+  falkordb:
+    image: falkordb/falkordb:v4.22.1
+    ports:
+      - "127.0.0.1:6379:6379"
+      - "127.0.0.1:3000:3000"
+    environment:
+      REDIS_ARGS: "--appendonly yes"
+    volumes:
+      - falkor_data:/var/lib/falkordb/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+  app:
+    build: .
+    ports:
+      - "127.0.0.1:8501:8501"
+    environment:
+      FALKORDB_HOST: falkordb
+      FALKORDB_PORT: "6379"
+      GRAPH_NAME: ${GRAPH_NAME:-ensino_2024_amostra}
+      EMBEDDING_MODE: ${EMBEDDING_MODE:-semantic}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+    volumes:
+      - ./data:/app/data
+      - embedding_cache:/tmp/fastembed_cache
+    depends_on:
+      falkordb:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  falkor_data:
+  embedding_cache:

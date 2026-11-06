@@ -1,0 +1,53 @@
+:ID,:LABEL,CO_CINE_AREA_DETALHADA,NO_CINE_AREA_DETALHADA,CO_CINE_AREA_ESPECIFICA
+cine_area_detalhada_0111,CineAreaDetalhada,0111,Ciência da educação,011
+cine_area_detalhada_0113,CineAreaDetalhada,0113,Formação de professores sem áreas específicas,011
+cine_area_detalhada_0114,CineAreaDetalhada,0114,Formação de professores em áreas específicas (exceto Letras),011
+cine_area_detalhada_0115,CineAreaDetalhada,0115,Formação de professores de letras,011
+cine_area_detalhada_0188,CineAreaDetalhada,0188,Programas interdisciplinares abrangendo educação,018
+cine_area_detalhada_0211,CineAreaDetalhada,0211,"Produção audiovisual, de mídia e cultural",021
+cine_area_detalhada_0212,CineAreaDetalhada,0212,"Moda, design de interiores e desenho industrial",021
+cine_area_detalhada_0221,CineAreaDetalhada,0221,Religião e teologia,022
+cine_area_detalhada_0222,CineAreaDetalhada,0222,História e arqueologia,022
+cine_area_detalhada_0231,CineAreaDetalhada,0231,Letras,023
+cine_area_detalhada_0311,CineAreaDetalhada,0311,Economia,031
+cine_area_detalhada_0312,CineAreaDetalhada,0312,Ciências sociais e políticas,031
+cine_area_detalhada_0313,CineAreaDetalhada,0313,Psicologia,031
+cine_area_detalhada_0321,CineAreaDetalhada,0321,Comunicação e reportagem,032
+cine_area_detalhada_0322,CineAreaDetalhada,0322,Ciência da informação e museologia,032
+cine_area_detalhada_0388,CineAreaDetalhada,0388,"Programas interdisciplinares abrangendo ciências sociais, comunicação e informação",038
+cine_area_detalhada_0399,CineAreaDetalhada,0399,"Programas abrangendo ciências sociais, comunicação e informação em processo de definição da classificação",039
+cine_area_detalhada_0411,CineAreaDetalhada,0411,Contabilidade e tributação,041
+cine_area_detalhada_0412,CineAreaDetalhada,0412,"Finanças, bancos e seguros",041
+cine_area_detalhada_0413,CineAreaDetalhada,0413,Gestão e administração,041
+cine_area_detalhada_0414,CineAreaDetalhada,0414,Marketing e propaganda,041
+cine_area_detalhada_0416,CineAreaDetalhada,0416,Gestão comercial,041
+cine_area_detalhada_0421,CineAreaDetalhada,0421,Direito,042
+cine_area_detalhada_0488,CineAreaDetalhada,0488,"Programas interdisciplinares abrangendo negócios, administração e direito",048
+cine_area_detalhada_0511,CineAreaDetalhada,0511,Biologia,051
+cine_area_detalhada_0533,CineAreaDetalhada,0533,Física,053
+cine_area_detalhada_0612,CineAreaDetalhada,0612,Infraestrutura e gestão de TIC,061
+cine_area_detalhada_0613,CineAreaDetalhada,0613,Análise e desenvolvimento de algoritmos e aplicações,061
+cine_area_detalhada_0681,CineAreaDetalhada,0681,Soluções computacionais para domínios específicos,068
+cine_area_detalhada_0712,CineAreaDetalhada,0712,Tecnologia de proteção ambiental,071
+cine_area_detalhada_0713,CineAreaDetalhada,0713,Eletricidade e energia,071
+cine_area_detalhada_0714,CineAreaDetalhada,0714,Eletrônica e automação,071
+cine_area_detalhada_0715,CineAreaDetalhada,0715,Engenharia mecânica e metalurgia,071
+cine_area_detalhada_0725,CineAreaDetalhada,0725,Produção e processos de fabricação,072
+cine_area_detalhada_0731,CineAreaDetalhada,0731,Arquitetura e planejamento urbano,073
+cine_area_detalhada_0732,CineAreaDetalhada,0732,Engenharia civil e construção,073
+cine_area_detalhada_0811,CineAreaDetalhada,0811,"Produção agrícola, agropecuária e zootecnia",081
+cine_area_detalhada_0841,CineAreaDetalhada,0841,Veterinária,084
+cine_area_detalhada_0911,CineAreaDetalhada,0911,Odontologia,091
+cine_area_detalhada_0913,CineAreaDetalhada,0913,Enfermagem,091
+cine_area_detalhada_0914,CineAreaDetalhada,0914,Tecnologia de diagnóstico e tratamento médico,091
+cine_area_detalhada_0915,CineAreaDetalhada,0915,"Promoção, prevenção, terapia e reabilitação",091
+cine_area_detalhada_0916,CineAreaDetalhada,0916,Farmácia,091
+cine_area_detalhada_0917,CineAreaDetalhada,0917,Medicina e terapia tradicional e complementar,091
+cine_area_detalhada_0918,CineAreaDetalhada,0918,Saúde pública e saúde coletiva,091
+cine_area_detalhada_0923,CineAreaDetalhada,0923,Serviço social,092
+cine_area_detalhada_1012,CineAreaDetalhada,1012,Serviços de beleza,101
+cine_area_detalhada_1013,CineAreaDetalhada,1013,Serviços de alimentação,101
+cine_area_detalhada_1015,CineAreaDetalhada,1015,Turismo e hotelaria,101
+cine_area_detalhada_1022,CineAreaDetalhada,1022,Saúde e segurança no trabalho,102
+cine_area_detalhada_1032,CineAreaDetalhada,1032,Proteção de pessoas e de propriedades,103
+cine_area_detalhada_1041,CineAreaDetalhada,1041,Serviços de transporte,104

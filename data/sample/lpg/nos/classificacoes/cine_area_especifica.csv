@@ -1,0 +1,28 @@
+:ID,:LABEL,CO_CINE_AREA_ESPECIFICA,NO_CINE_AREA_ESPECIFICA,CO_CINE_AREA_GERAL
+cine_area_especifica_011,CineAreaEspecifica,011,Educação,01
+cine_area_especifica_018,CineAreaEspecifica,018,Programas interdisciplinares abrangendo educação,01
+cine_area_especifica_021,CineAreaEspecifica,021,Artes,02
+cine_area_especifica_022,CineAreaEspecifica,022,Humanidades (exceto línguas),02
+cine_area_especifica_023,CineAreaEspecifica,023,Línguas,02
+cine_area_especifica_031,CineAreaEspecifica,031,Ciências sociais e comportamentais,03
+cine_area_especifica_032,CineAreaEspecifica,032,Comunicação e informação,03
+cine_area_especifica_038,CineAreaEspecifica,038,"Programas interdisciplinares abrangendo ciências sociais, comunicação e informação",03
+cine_area_especifica_039,CineAreaEspecifica,039,"Programas abrangendo ciências sociais, comunicação e informação em processo de definição da classificação",03
+cine_area_especifica_041,CineAreaEspecifica,041,Negócios e administração,04
+cine_area_especifica_042,CineAreaEspecifica,042,Direito,04
+cine_area_especifica_048,CineAreaEspecifica,048,"Programas interdisciplinares abrangendo negócios, administração e direito",04
+cine_area_especifica_051,CineAreaEspecifica,051,Ciências biológicas e correlatas,05
+cine_area_especifica_053,CineAreaEspecifica,053,Ciências físicas,05
+cine_area_especifica_061,CineAreaEspecifica,061,Computação e Tecnologias da Informação e Comunicação (TIC),06
+cine_area_especifica_068,CineAreaEspecifica,068,Programas interdisciplinares abrangendo computação e Tecnologias da Informação e Comunicação (TIC),06
+cine_area_especifica_071,CineAreaEspecifica,071,Engenharia e profissões correlatas,07
+cine_area_especifica_072,CineAreaEspecifica,072,Produção e processamento,07
+cine_area_especifica_073,CineAreaEspecifica,073,Arquitetura e construção,07
+cine_area_especifica_081,CineAreaEspecifica,081,Agricultura,08
+cine_area_especifica_084,CineAreaEspecifica,084,Veterinária,08
+cine_area_especifica_091,CineAreaEspecifica,091,Saúde,09
+cine_area_especifica_092,CineAreaEspecifica,092,Bem-estar,09
+cine_area_especifica_101,CineAreaEspecifica,101,Serviços pessoais,10
+cine_area_especifica_102,CineAreaEspecifica,102,Higiene e serviços de saúde ocupacional,10
+cine_area_especifica_103,CineAreaEspecifica,103,Serviços de segurança,10
+cine_area_especifica_104,CineAreaEspecifica,104,Serviços de transporte,10

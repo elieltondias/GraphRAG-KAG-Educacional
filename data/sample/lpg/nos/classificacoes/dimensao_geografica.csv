@@ -1,0 +1,3 @@
+:ID,:LABEL,CO_DIMENSAO,NO_DIMENSAO,ABRANGENCIA
+dimensao_1,DimensaoGeografica,1,Cursos presenciais ofertados no Brasil,Municipal (presencial)
+dimensao_2,DimensaoGeografica,2,Cursos a distância ofertados no Brasil,Municipal (EAD)
