@@ -1,15 +1,57 @@
 {
   "methodology": "Cinco consultas de entidade conhecida, sem LLM, amostra fixa. Recall das sementes em top-4; não mede exatidão de respostas, causalidade, ou generalização. Latências incluem aquecimento do modelo e são específicas da máquina.",
   "metadata": {
-    "id": "dataset",
-    "scope": "amostra",
-    "year": 2024,
-    "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-    "status": "pronto",
-    "source": "/workspace/scratch/19c42ea6040c/ensino-superior-graph/data/sample/lpg",
-    "fingerprint": "7a3ce30dbab915bfa4fcd02b988241213285c1e85bca378932a8116d660114e8",
     "nodes_imported": 970,
-    "edges_imported": 3101
+    "edges_imported": 3101,
+    "year": 2024,
+    "scope": "amostra",
+    "fingerprint": "343f0536501eb63e9c772c28396dcb5ddc6f3befc4c7ad6efeb04b1511a26c81",
+    "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "id": "dataset",
+    "source": "data/sample/lpg",
+    "relacoes": [
+      "CLASSIFICADO_EM",
+      "LOCALIZADA_EM",
+      "MANTIDA_POR",
+      "OFERTADA_POR",
+      "OFERTADO_POR",
+      "OFERTA_DE",
+      "PERTENCE_A_AREA_DETALHADA",
+      "PERTENCE_A_AREA_ESPECIFICA",
+      "PERTENCE_A_AREA_GERAL",
+      "PERTENCE_A_REDE",
+      "PERTENCE_A_REGIAO",
+      "PERTENCE_A_UF",
+      "SEDIADA_EM",
+      "TEM_CATEGORIA_ADMINISTRATIVA",
+      "TEM_DIMENSAO_GEOGRAFICA",
+      "TEM_GRAU_ACADEMICO",
+      "TEM_MODALIDADE_ENSINO",
+      "TEM_NIVEL_ACADEMICO",
+      "TEM_ORGANIZACAO_ACADEMICA"
+    ],
+    "graph": "ensino_2024_amostra",
+    "labels": [
+      "CategoriaAdministrativa",
+      "CineAreaDetalhada",
+      "CineAreaEspecifica",
+      "CineAreaGeral",
+      "CineRotulo",
+      "Curso",
+      "DimensaoGeografica",
+      "GrauAcademico",
+      "IES",
+      "Mantenedora",
+      "ModalidadeEnsino",
+      "Municipio",
+      "NivelAcademico",
+      "OfertaCurso",
+      "OrganizacaoAcademica",
+      "Rede",
+      "Regiao",
+      "UF"
+    ],
+    "status": "pronto"
   },
   "results": [
     {
@@ -25,9 +67,9 @@
         "2024:ies_339"
       ],
       "entity_recall_at_4": 1.0,
-      "latency_seconds": 0.275,
+      "latency_seconds": 0.5074,
       "paths": 240,
-      "nodes": 106
+      "nodes": 138
     },
     {
       "question": "João Pessoa",
@@ -42,9 +84,9 @@
         "2024:municipio_2501104"
       ],
       "entity_recall_at_4": 1.0,
-      "latency_seconds": 0.1273,
+      "latency_seconds": 1.6122,
       "paths": 208,
-      "nodes": 99
+      "nodes": 142
     },
     {
       "question": "João Pessoa",
@@ -55,13 +97,13 @@
       "retrieved_seed_ids": [
         "2024:municipio_2507507",
         "2024:ies_352",
-        "2024:ies_19956",
-        "2024:municipio_4216602"
+        "2024:municipio_4216602",
+        "2024:ies_19956"
       ],
       "entity_recall_at_4": 1.0,
-      "latency_seconds": 0.2237,
+      "latency_seconds": 0.2668,
       "paths": 215,
-      "nodes": 138
+      "nodes": 170
     },
     {
       "question": "Universidade Federal da Paraíba",
@@ -72,13 +114,13 @@
       "retrieved_seed_ids": [
         "2024:ies_579",
         "2024:mantenedora_15590",
-        "2024:mantenedora_14341",
-        "2024:mantenedora_382"
+        "2024:ies_2564",
+        "2024:mantenedora_14341"
       ],
       "entity_recall_at_4": 1.0,
-      "latency_seconds": 0.0529,
-      "paths": 97,
-      "nodes": 87
+      "latency_seconds": 0.1803,
+      "paths": 148,
+      "nodes": 82
     },
     {
       "question": "Universidade Federal da Paraíba",
@@ -87,15 +129,15 @@
         "2024:ies_579"
       ],
       "retrieved_seed_ids": [
-        "2024:curso_1270_1328972",
-        "2024:curso_1196_1279057",
-        "2024:curso_1660_1576932",
-        "2024:curso_163_1443997"
+        "2024:ies_579",
+        "2024:ies_2564",
+        "2024:uf_53",
+        "2024:ies_550"
       ],
-      "entity_recall_at_4": 0.0,
-      "latency_seconds": 0.1195,
-      "paths": 48,
-      "nodes": 64
+      "entity_recall_at_4": 1.0,
+      "latency_seconds": 0.2628,
+      "paths": 185,
+      "nodes": 93
     },
     {
       "question": "Universidade Federal da Paraíba",
@@ -106,13 +148,13 @@
       "retrieved_seed_ids": [
         "2024:ies_579",
         "2024:mantenedora_15590",
-        "2024:curso_1270_1328972",
-        "2024:mantenedora_14341"
+        "2024:ies_2564",
+        "2024:ies_550"
       ],
       "entity_recall_at_4": 1.0,
-      "latency_seconds": 0.0807,
-      "paths": 135,
-      "nodes": 142
+      "latency_seconds": 0.3019,
+      "paths": 201,
+      "nodes": 88
     },
     {
       "question": "Centro Universitário de João Pessoa",
@@ -122,14 +164,14 @@
       ],
       "retrieved_seed_ids": [
         "2024:ies_352",
+        "2024:municipio_2507507",
         "2024:ies_19956",
-        "2024:organizacao_2",
-        "2024:mantenedora_17427"
+        "2024:ies_1075"
       ],
       "entity_recall_at_4": 1.0,
-      "latency_seconds": 0.1778,
-      "paths": 187,
-      "nodes": 107
+      "latency_seconds": 0.3398,
+      "paths": 240,
+      "nodes": 143
     },
     {
       "question": "Centro Universitário de João Pessoa",
@@ -144,9 +186,9 @@
         "2024:municipio_2501104"
       ],
       "entity_recall_at_4": 0.0,
-      "latency_seconds": 0.1377,
+      "latency_seconds": 0.3622,
       "paths": 214,
-      "nodes": 155
+      "nodes": 193
     },
     {
       "question": "Centro Universitário de João Pessoa",
@@ -157,13 +199,13 @@
       "retrieved_seed_ids": [
         "2024:ies_352",
         "2024:municipio_2507507",
-        "2024:ies_19956",
-        "2024:municipio_4216602"
+        "2024:municipio_4216602",
+        "2024:ies_19956"
       ],
       "entity_recall_at_4": 1.0,
-      "latency_seconds": 0.1404,
+      "latency_seconds": 0.3739,
       "paths": 215,
-      "nodes": 138
+      "nodes": 170
     },
     {
       "question": "Santa Rita",
@@ -173,14 +215,14 @@
       ],
       "retrieved_seed_ids": [
         "2024:municipio_2513703",
-        "2024:ies_1510",
-        "2024:municipio_2513802",
-        "2024:uf_42"
+        "2024:municipio_2513406",
+        "2024:uf_42",
+        "2024:municipio_2513802"
       ],
       "entity_recall_at_4": 1.0,
-      "latency_seconds": 0.2201,
-      "paths": 182,
-      "nodes": 106
+      "latency_seconds": 0.2324,
+      "paths": 176,
+      "nodes": 95
     },
     {
       "question": "Santa Rita",
@@ -195,9 +237,9 @@
         "2024:municipio_2513406"
       ],
       "entity_recall_at_4": 1.0,
-      "latency_seconds": 0.1091,
+      "latency_seconds": 0.2697,
       "paths": 176,
-      "nodes": 74
+      "nodes": 95
     },
     {
       "question": "Santa Rita",
@@ -208,13 +250,13 @@
       "retrieved_seed_ids": [
         "2024:municipio_2513703",
         "2024:uf_42",
-        "2024:municipio_2513802",
-        "2024:ies_1510"
+        "2024:municipio_2513406",
+        "2024:municipio_2513802"
       ],
       "entity_recall_at_4": 1.0,
-      "latency_seconds": 0.1093,
-      "paths": 182,
-      "nodes": 106
+      "latency_seconds": 0.2271,
+      "paths": 176,
+      "nodes": 95
     },
     {
       "question": "Campina Grande",
@@ -224,14 +266,14 @@
       ],
       "retrieved_seed_ids": [
         "2024:municipio_2504009",
-        "2024:mantenedora_14341",
         "2024:ies_2564",
+        "2024:mantenedora_14341",
         "2024:ies_3879"
       ],
       "entity_recall_at_4": 1.0,
-      "latency_seconds": 0.2096,
+      "latency_seconds": 0.2095,
       "paths": 187,
-      "nodes": 140
+      "nodes": 109
     },
     {
       "question": "Campina Grande",
@@ -246,9 +288,9 @@
         "2024:municipio_5300108"
       ],
       "entity_recall_at_4": 1.0,
-      "latency_seconds": 0.1068,
+      "latency_seconds": 0.1939,
       "paths": 167,
-      "nodes": 112
+      "nodes": 139
     },
     {
       "question": "Campina Grande",
@@ -260,12 +302,12 @@
         "2024:municipio_2504009",
         "2024:municipio_5002704",
         "2024:municipio_2500304",
-        "2024:uf_24"
+        "2024:ies_2564"
       ],
       "entity_recall_at_4": 1.0,
-      "latency_seconds": 0.0989,
-      "paths": 149,
-      "nodes": 94
+      "latency_seconds": 0.2415,
+      "paths": 203,
+      "nodes": 141
     }
   ]
 }

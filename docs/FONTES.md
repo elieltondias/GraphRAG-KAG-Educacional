@@ -22,15 +22,18 @@ Os arquivos são uma amostra derivada atribuída à fonte. Nenhum script Python 
 
 ## Bibliotecas e documentação
 
-- FalkorDB e cliente Python: https://github.com/FalkorDB/falkordb-py
-- Índice vetorial: https://docs.falkordb.com/cypher/indexing/vector-index
-- Full-text: https://docs.falkordb.com/cypher/indexing/fulltext-index
-- Constraints: https://docs.falkordb.com/commands/graph.constraint-create
-- Docker/Browser: https://github.com/FalkorDB/falkordb-browser
+- Neo4j (documentação da versão 5): https://neo4j.com/docs/
+- Driver Python oficial: https://neo4j.com/docs/api/python-driver/current/
+- Índices vetoriais: https://neo4j.com/docs/cypher-manual/current/indexes-for-vector-search/
+- Índices full-text: https://neo4j.com/docs/cypher-manual/current/full-text-search/
+- Constraints: https://neo4j.com/docs/cypher-manual/current/constraints/
+- Graph Data Science (plugin opcional): https://neo4j.com/docs/graph-data-science/
+- APOC (plugin opcional): https://neo4j.com/docs/apoc/
+- Imagem Docker oficial: https://hub.docker.com/_/neo4j
 - Streamlit: https://docs.streamlit.io/
 - FastEmbed: https://github.com/qdrant/fastembed
 - Modelo multilíngue: https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
-- NetworkX PageRank: https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.link_analysis.pagerank_alg.pagerank.html
+- NetworkX (PageRank e Louvain): https://networkx.org/documentation/stable/
 - PyVis: https://pyvis.readthedocs.io/
 - pypdf: https://pypdf.readthedocs.io/
 

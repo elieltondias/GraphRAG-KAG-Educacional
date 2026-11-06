@@ -4,23 +4,23 @@
 
 Domínio: análise rastreável de microdados do ensino superior, ano 2024. A expressão “centro de microdados” se refere à organização lógica de dados, consulta e procedência, não à implementação de infraestrutura física de datacenter.
 
-O banco escolhido é FalkorDB, conforme orientação do professor informada pelo grupo. Não há dependência de Neo4j. A interface é Streamlit e pode ser editada no VS Code. Docker Compose inicia o banco e a interface.
+O banco é **Neo4j 5.26 Community** (Docker) com o driver oficial `neo4j` 5.28.8, conforme o enunciado. A interface é Streamlit e pode ser editada no VS Code. Docker Compose inicia o banco (com APOC e GDS como plugins opcionais) e a interface.
 
 ```mermaid
 flowchart TD
     A["Microdados LPG e documentos"] --> B["Validação e resolução de entidades"]
-    B --> C["FalkorDB: entidades, relações e índices"]
+    B --> C["Neo4j: entidades, relações, constraints e índices por grafo"]
     C --> D["Recuperação textual e vetorial"]
     D --> E["RRF e travessia de dois saltos"]
-    E --> F["PageRank e evidências"]
+    E --> F["PageRank, Louvain e evidências"]
     F --> G["Resposta e grafo interativo"]
-    F --> H["LLM opcional com citações"]
+    F --> H["LLM opcional: citações, Cypher e NER/RE"]
     H --> G
 ```
 
 ## Entidades e relações
 
-Os rótulos originais do repositório são preservados. Todos os nós também recebem `Entity`, `id`, `kind`, `name`, `name_norm`, `source_file`. Códigos como `CO_IES` permanecem strings. Indicadores `QT_*` são inteiros; flags `IN_*` são booleanos; vazios não são materializados como propriedades.
+Os rótulos originais do repositório são preservados. Todos os nós também recebem `Entity`, `id`, `kind`, `name`, `name_norm`, `source_file` e `graph`. Códigos como `CO_IES` permanecem strings. Indicadores `QT_*` são inteiros; flags `IN_*` são booleanos; vazios não são materializados como propriedades.
 
 | Origem | Relação | Destino | Uso |
 |---|---|---|---|
@@ -32,67 +32,74 @@ Os rótulos originais do repositório são preservados. Todos os nós também re
 | Curso | OFERTADO_POR | IES | Instituição do curso |
 | IES | SEDIADA_EM | Municipio | Sede, distinta do local da oferta |
 | Curso | CLASSIFICADO_EM | CineRotulo | Classificação CINE |
-| CineRotulo | PERTENCE_A_AREA_DETALHADA | CineAreaDetalhada | Hierarquia CINE |
 | Documento | CONTEM | Trecho | Procedência documental |
-| Trecho | MENCIONA | Entity | Relação extraída de texto |
+| Trecho | MENCIONA | Entity | Relação extraída de texto (dicionário ou LLM) |
+| Entity | SE_RELACIONA_COM | Entity | Relação extraída por LLM, com `relacao`, `trecho`, `metodo` |
 
-Outros rótulos/relações de classificação, rede e mantenedora também são importados. O modelo original completo está em `lpg/schema/modelo.md` após baixar o repositório.
+Outros rótulos/relações de classificação, rede e mantenedora também são importados. O modelo original completo está em `lpg/schema/modelo.md`.
 
 ## Identidade, integridade e reimportação
 
-`id = 2024:<ID original LPG>` mantém identidades distintas entre instituições/cursos com o mesmo nome. `MERGE` por ID torna a reimportação idempotente. As relações usam origem, tipo e destino. Não se fundem cursos apenas pelo nome.
+`id = 2024:<ID original LPG>` mantém identidades distintas entre instituições/cursos com o mesmo nome. `MERGE` por ID torna a reimportação idempotente. Não se fundem cursos apenas pelo nome.
 
-Há índice exato em `Entity.id` antes da constraint UNIQUE, além de MANDATORY no mesmo campo. As constraints são consultadas até ficarem OPERATIONAL; falhas impedem concluir a importação. O fingerprint SHA-256 de todos os CSVs e caminhos ordenados impede importar outra versão no mesmo grafo. O status `importando` bloqueia perguntas durante uma carga interrompida.
+**Partição lógica:** toda consulta filtra pela propriedade `graph` (nome do grafo lógico configurado em `GRAPH_NAME`), então vários conjuntos de dados coexistem no mesmo servidor sem se misturar. A unicidade é composta: constraint `(n.id, n.graph) IS UNIQUE`. Obrigatoriedade de `id`/`graph` é garantida pela camada de ingestão (`Store.upsert_nodes`), porque constraints de existência de propriedade (`IS NOT NULL`) exigem Neo4j Enterprise.
 
-`Metadata` guarda escopo, ano, fingerprint e identidade do modelo. O protótipo suporta um conjunto de 2024 por grafo. Novos escopos/modelos exigem outro nome de grafo.
+O fingerprint SHA-256 de todos os CSVs e caminhos ordenados impede importar outra versão no mesmo grafo. O status `importando` bloqueia perguntas durante uma carga interrompida. `Metadata` guarda escopo, ano, fingerprint, rótulos/relações importados e identidade do modelo.
 
-## Índices FalkorDB
+## Constraints e índices Neo4j
+
+Criados por `Store.schema()` com `IF NOT EXISTS` e aguardados até o estado `ONLINE`:
 
 ```cypher
-CREATE INDEX FOR (n:Entity) ON (n.id)
-CREATE INDEX FOR (n:Entity) ON (n.name_norm)
-CALL db.idx.fulltext.createNodeIndex('Entity','search_text')
-CREATE VECTOR INDEX FOR (n:Entity) ON (n.embedding)
-OPTIONS {dimension:384, similarityFunction:'cosine'}
+CREATE CONSTRAINT entity_uniq IF NOT EXISTS FOR (n:Entity) REQUIRE (n.id, n.graph) IS UNIQUE
+CREATE INDEX entity_id_idx IF NOT EXISTS FOR (n:Entity) ON (n.id)
+CREATE INDEX entity_name_norm_idx IF NOT EXISTS FOR (n:Entity) ON (n.name_norm)
+-- por grafo lógico (rótulo adicional = nome do grafo):
+CREATE FULLTEXT INDEX entity_search_<grafo> IF NOT EXISTS FOR (n:<grafo>) ON EACH [n.search_text]
+CREATE VECTOR INDEX entity_embedding_<grafo> IF NOT EXISTS FOR (n:<grafo>) ON (n.embedding)
+  OPTIONS {indexConfig: {`vector.dimensions`: 384, `vector.similarity_function`: 'cosine', `vector.quantization.enabled`: false}}
 ```
 
-Unicidade e obrigatoriedade são criadas pelo protocolo Redis:
+Os índices full-text e vetoriais são **por grafo**: cada nó recebe também o rótulo com o nome do grafo, para que a busca aproximada (top-k) não concorra com nós de outras partições antes do filtro `WHERE node.graph`. Com quantização desligada, o score do índice vetorial é `score = (1 + cosseno)/2` (maior é melhor).
 
-```text
-GRAPH.CONSTRAINT CREATE nome_do_grafo UNIQUE NODE Entity PROPERTIES 1 id
-GRAPH.CONSTRAINT CREATE nome_do_grafo MANDATORY NODE Entity PROPERTIES 1 id
-```
-
-O código usa parâmetros para valores. Rótulos e tipos, que não podem ser parâmetros, passam por validação de identificador antes de compor a consulta.
+O código usa parâmetros para valores. Rótulos e tipos, que não podem ser parâmetros, passam por validação de identificador (`identifier()`) antes de compor a consulta.
 
 ## Recuperação híbrida
 
-Os vetores das entidades usam nome, sigla quando disponível e tipo; o full-text preserva um texto mais amplo com geografia e classificações. A geografia do contexto é recuperada por relações, para evitar que muitos nomes compartilhados dominem os vetores.
+Os vetores das entidades usam nome, sigla quando disponível e tipo; o full-text preserva um texto mais amplo com geografia e classificações.
 
 1. Normalizar a pergunta e obter até 20 termos sem operadores de busca externos.
-2. Recuperar até 12 entidades pela busca full-text e até 12 pelo índice vetorial. No FalkorDB, o score vetorial é distância: menor é melhor, portanto o resultado usa ORDER BY score ASC.
+2. Recuperar até 12 entidades pelo índice full-text do grafo e até 12 pelo índice vetorial do grafo.
 3. Fundir rankings com RRF: `score(id) = Σ 1/(60 + posição)`; os escores brutos não são comparados diretamente.
-4. Priorizar correspondências exatas de `name_norm` (resolução de entidade pela pergunta inteira) e completar até quatro sementes pelo RRF. Recuperar até 60 caminhos de comprimento 1–2 por semente. Os limites tornam a visualização manejável, mas reduzem completude.
+4. Priorizar correspondências exatas de `name_norm` e completar até quatro sementes pelo RRF. Recuperar até 60 caminhos de comprimento 1–2 por semente.
 5. Calcular PageRank apenas nesse subgrafo. Ordenar caminhos pelo somatório de PageRank de seus nós e usar a pontuação no tamanho visual.
-6. Se houver filtros, executar agregação exata sobre todas as ofertas correspondentes e listar até 100. Acrescentar caminhos OfertaCurso → Curso → IES para contextualização.
+6. Se houver filtros, executar agregação exata sobre todas as ofertas correspondentes e listar até 100. Acrescentar caminhos OfertaCurso → Curso → IES.
 7. Mostrar evidências, filtros, Cypher, parâmetros, fontes e IDs; gerar texto opcional por LLM.
 
-Os indicadores não são calculados sobre o conjunto limitado de caminhos, e sim por consulta separada ao banco. Não se somam métricas diretamente em IES/Curso: o grão escolhido é `OfertaCurso`, conforme o LPG da fonte.
+Os indicadores não são calculados sobre o conjunto limitado de caminhos, e sim por consulta separada ao banco. O grão escolhido é `OfertaCurso`. A confiança exibida é uma categoria de cobertura, sem probabilidade calibrada.
 
-A confiança exibida é uma categoria de cobertura, sem probabilidade calibrada. Encontrar nós semanticamente próximos não significa que a pergunta possa ser respondida. No modo sem LLM, o retorno é uma relação de evidências e agregações explicitamente filtradas.
+## Algoritmos de grafo
+
+- **PageRank** (NetworkX) sobre o subgrafo recuperado, para ordenar caminhos e dimensionar nós.
+- **Louvain** (`src/algorithms.py`): usa o plugin **GDS** (`gds.louvain`) quando disponível e cai para implementação determinística em NetworkX (`seed=42`) sem plugin/internet. O resultado é gravado em `community` em todos os nós da partição; a UI colore as comunidades. Uma projeção temporária é criada e removida a cada execução.
+- **Menor caminho**: `shortestPath` do Cypher (núcleo), restrito à partição, até 8 saltos, com descrição legível do caminho na UI.
 
 ## Text-to-Graph
 
-PDF textual/TXT → páginas → trechos de até 1.100 caracteres → normalização → reconhecimento por nomes/siglas existentes → resolução somente quando o alias tem um ID único → vínculos MENCIONA.
+PDF textual/TXT → páginas → trechos de até 1.100 caracteres → normalização → reconhecimento por nomes/siglas existentes → resolução somente quando o alias tem um ID único → vínculos `MENCIONA`.
 
-O conteúdo SHA-256 identifica o documento; página e índice identificam o trecho. Reimportações do mesmo conteúdo não duplicam trechos. Os textos e páginas são mantidos no banco e incluídos nas evidências documentais. O método não descobre livremente entidades novas e não infere relações factuais só por coocorrência.
+Opcionalmente (com LLM configurado e consentimento), cada trecho também passa por **NER/RE via LLM**: o modelo devolve JSON com entidades e relações; só nomes resolvidos **exatamente** no catálogo geram vínculos (`MENCIONA` com `metodo=llm` e `SE_RELACIONA_COM` com verbo, trecho, página e fonte). Relações com extremos desconhecidos ou ambíguos são ignoradas e contabilizadas (`relacoes_ignoradas`). O método não descobre livremente entidades novas nem infere relações factuais só por coocorrência.
+
+O conteúdo SHA-256 identifica o documento; reimportações do mesmo conteúdo não duplicam trechos.
+
+## Cypher gerado por LLM (sandbox)
+
+`LLM.cypher` pede ao modelo uma consulta única de leitura. `validate_cypher` rejeita: múltiplas instruções (`;`), ausência de `RETURN`, qualquer operação de escrita (`CREATE`, `MERGE`, `DELETE`, `SET`, `DROP`, `LOAD CSV`, `FOREACH`, `BEGIN/COMMIT`, `USE`…) e procedures fora de `db.`; anexa `LIMIT 100` quando ausente. A garantia dura é a **transação `READ`** imposta pelo servidor Neo4j (`Store.query(..., readonly=True)`): mesmo que a validação seja contornada, escritas são rejeitadas pelo servidor. A consulta gerada aparece na aba de rastreabilidade junto com as demais.
 
 ## GraphRAG e KAG nesta implementação
 
-GraphRAG: recuperação por texto/vetor enriquecida pela estrutura de relações e pelo subgrafo de contexto. KAG: esquema explícito, tipos, regras de identidade, filtros tipados, agregações determinísticas e evidências restringem o contexto da geração. É uma implementação acadêmica inspirada nesses princípios, não uma reprodução integral de um framework KAG externo.
-
-O LLM pode transformar a pergunta em JSON de filtros validado; o código gera a consulta parametrizada a partir de um template fixo. Essa escolha diverge da geração livre de Cypher para reduzir consultas inválidas e mutações. Só leitura é usada no caminho de perguntas.
+GraphRAG: recuperação por texto/vetor enriquecida pela estrutura de relações e pelo subgrafo de contexto. KAG: esquema explícito, tipos, regras de identidade, filtros tipados, agregações determinísticas, sandbox de Cypher e evidências restringem o contexto da geração. É uma implementação acadêmica inspirada nesses princípios, não uma reprodução integral de um framework KAG externo.
 
 ## Limitações de validação
 
-O modelo semântico local foi testado com a amostra; os testes de integração usam hashing para repetibilidade. Sem chave/provedor de LLM, não se afirma validação de geração livre. A base nacional completa e o ambiente Docker Desktop do usuário precisam de validação no computador de apresentação. Detalhes em VALIDACAO.md.
+O modelo semântico local foi testado com a amostra; os testes de integração usam hashing para repetibilidade. Sem chave/provedor de LLM, não se afirma validação de geração livre. A base nacional completa precisa de validação no computador de apresentação. Detalhes em VALIDACAO.md.
