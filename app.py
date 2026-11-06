@@ -100,10 +100,11 @@ if page=='Importar':
     st.write('Extração por dicionário de entidades já cadastradas: documento → trecho → entidade mencionada. Menções ambíguas ficam sem vínculo automático.')
     upload=st.file_uploader('PDF com texto ou TXT em UTF-8',type=['pdf','txt'])
     consent=st.checkbox('Autorizo enviar trechos deste documento ao provedor configurado quando usar o LLM.') if llm.enabled else True
+    use_llm_ner=st.checkbox('Usar LLM para NER/RE (extrai entidades e relações além do dicionário)',value=False,disabled=not llm.enabled)
     if st.button('Extrair entidades e relações',disabled=not ready or upload is None or not consent):
         try:
             with st.spinner('Extraindo e indexando os trechos...'):
-                result=ingest_document(store,upload.name,upload.getvalue())
+                result=ingest_document(store,upload.name,upload.getvalue(),llm=llm if use_llm_ner else None)
             st.success('Documento processado.')
             st.json(result)
         except Exception as error:
@@ -124,6 +125,7 @@ elif page=='Consultar':
         mode=a.selectbox('Estratégia de recuperação',['hybrid','lexical','vector'],format_func=lambda v:{'hybrid':'Híbrida · texto + vetor + grafo','lexical':'Texto + grafo','vector':'Vetor + grafo'}[v])
         use_llm=b.checkbox('Redigir resposta com LLM',value=False,disabled=not llm.enabled)
         auto_plan=st.checkbox('Interpretar a pergunta em filtros com LLM (substitui os filtros manuais)',disabled=not llm.enabled)
+        gen_cypher=st.checkbox('Gerar consulta Cypher com LLM (sandbox de somente leitura)',disabled=not llm.enabled)
         submitted=st.form_submit_button('Consultar conhecimento',type='primary',disabled=not ready)
     if not llm.enabled:
         st.caption('Sem LLM, a pergunta orienta a busca de relações. Para números, preencha os filtros: eles determinam o cálculo, independentemente da pergunta.')
@@ -140,6 +142,13 @@ elif page=='Consultar':
                     except Exception as error:
                         st.warning(f'O LLM não concluiu uma resposta válida. Exibindo evidências e cálculos. Detalhe: {error}')
                 result['answer']=answer
+                if gen_cypher:
+                    try:
+                        consulta=llm.cypher(question,meta)
+                        linhas=store.query(consulta,readonly=True)
+                        result['cypher_llm']={'consulta':consulta,'linhas':linhas[:100]}
+                    except Exception as error:
+                        st.warning(f'Cypher gerado recusado pelo sandbox ou execução falhou. Detalhe: {error}')
                 st.session_state['result']=result
         except Exception as error:
             st.error(str(error))
@@ -171,6 +180,14 @@ elif page=='Consultar':
             if rows:
                 st.download_button('Exportar tabela CSV',pd.DataFrame(rows).to_csv(index=False,sep=';').encode('utf-8-sig'),'ofertas_recuperadas.csv','text/csv')
         with tabs[3]:
+            generated=result.get('cypher_llm')
+            if generated:
+                st.markdown('**Cypher gerado pelo LLM** · sandbox: uma instrução, só leitura, transação `READ` imposta pelo servidor, limite de 100 linhas.')
+                st.code(generated['consulta'],language='cypher')
+                if generated['linhas']:
+                    st.dataframe(pd.DataFrame(generated['linhas']),hide_index=True,width='stretch')
+                else:
+                    st.info('A consulta não retornou linhas.')
             st.json({'sementes':result['seeds'],'nos_consultados':result['consulted_node_ids'],'embedding':result['embedding']})
             for entry in result['trace']:
                 st.code(entry['cypher'],language='cypher')

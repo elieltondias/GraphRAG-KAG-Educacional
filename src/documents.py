@@ -40,7 +40,65 @@ def resolve_mentions(text, catalog):
     return sorted(mentions), sorted(ambiguous)
 
 
-def ingest_document(store, name, content):
+def alias_map(catalog):
+    """Índice normalizado alias → conjunto de IDs canônicos."""
+    aliases = defaultdict(set)
+    for row in catalog:
+        for alias in [row['name'], row.get('alias')]:
+            key = normalize(alias or '').strip()
+            if len(key) >= 3:
+                aliases[key].add(row['id'])
+    return aliases
+
+
+def resolve_name(name, aliases):
+    """Resolve um nome citado pelo LLM de forma exata; ambíguo/ausente retorna None."""
+    candidates = {normalize(name).strip()}
+    paren = re.match(r'^(.*?)\s*\((.*?)\)$', name.strip())
+    if paren:
+        candidates.update({normalize(paren.group(1)).strip(), normalize(paren.group(2)).strip()})
+    ids = set()
+    for candidate in candidates:
+        if len(candidate) >= 3:
+            ids.update(aliases.get(candidate, ()))
+    if len(ids) == 1:
+        return next(iter(ids))
+    return None
+
+
+def link_llm_extraction(store, chunk_id, page, source, data, catalog, aliases=None):
+    """Vincula NER/RE do LLM ao grafo: MENCIONA e SE_RELACIONA_COM com procedência.
+
+    Só entidades resolvidas exatamente no catálogo geram arestas; relações com
+    extremos desconhecidos ou ambíguos são ignoradas e contabilizadas.
+    """
+    aliases = aliases if aliases is not None else alias_map(catalog)
+    mencoes, vistos = [], set()
+    for name in data.get('entidades', []):
+        entity_id = resolve_name(name, aliases)
+        if entity_id and entity_id not in vistos:
+            vistos.add(entity_id)
+            mencoes.append({'source': chunk_id, 'target': entity_id,
+                            'props': {'metodo': 'llm', 'page': page}})
+    relacoes, ignoradas = [], 0
+    for relacao in data.get('relacoes', []):
+        origem = resolve_name(relacao.get('origem', ''), aliases)
+        destino = resolve_name(relacao.get('destino', ''), aliases)
+        verbo = re.sub(r'[^a-z0-9 ]+', ' ', normalize(relacao.get('relacao', ''))).strip()[:40]
+        if not origem or not destino or origem == destino or not verbo:
+            ignoradas += 1
+            continue
+        relacoes.append({'source': origem, 'target': destino,
+                         'props': {'relacao': verbo, 'trecho': chunk_id, 'metodo': 'llm',
+                                   'source_file': source, 'page': page}})
+    if mencoes:
+        store.upsert_edges('MENCIONA', mencoes, props=True)
+    if relacoes:
+        store.upsert_edges('SE_RELACIONA_COM', relacoes, props=True)
+    return {'mencoes': len(mencoes), 'relacoes': len(relacoes), 'ignoradas': ignoradas}
+
+
+def ingest_document(store, name, content, llm=None):
     meta = store.metadata()
     embedder = Embedder(store.settings.embedding,store.settings.model)
     if meta.get('status')!='pronto' or meta.get('embedding_model')!=embedder.identity:
@@ -61,7 +119,11 @@ def ingest_document(store, name, content):
     props = {'id':doc_id,'kind':'Documento','name':name,'name_norm':normalize(name),'source_file':name,'sha256':digest}
     store.upsert_nodes('Documento',[{'id':doc_id,'props':props}])
     catalog = store.query("MATCH (n:Entity) WHERE n.graph=$graph AND n.kind IN ['IES','Curso','Municipio','UF','Regiao'] RETURN n.id AS id,n.name AS name,n.SG_IES AS alias")
+    use_llm = bool(llm is not None and getattr(llm, 'enabled', False))
+    aliases = alias_map(catalog) if use_llm else None
+    LLM_CHUNK_LIMIT = 40
     count = mentions_count = 0
+    mencoes_llm = relacoes_llm = relacoes_ignoradas = erros_llm = chunks_llm = 0
     ambiguities = set()
     for page,text in pages:
         for part,chunk in enumerate(chunks(text)):
@@ -77,6 +139,23 @@ def ingest_document(store, name, content):
             store.vectors([{'id':chunk_id,'vector':embedder.encode([chunk])[0]}])
             count += 1
             mentions_count += len(mentions)
+            if use_llm and chunks_llm < LLM_CHUNK_LIMIT:
+                chunks_llm += 1
+                try:
+                    extraction = llm.extract(chunk)
+                    linked = link_llm_extraction(store, chunk_id, page, name, extraction, catalog, aliases)
+                    mencoes_llm += linked['mencoes']
+                    relacoes_llm += linked['relacoes']
+                    relacoes_ignoradas += linked['ignoradas']
+                except Exception:
+                    erros_llm += 1
     store.wait_ready()
-    return {'documento':name,'sha256':digest,'trechos':count,'mencoes':mentions_count,'ambiguidades_nao_vinculadas':sorted(ambiguities),
-            'metodo':'NER por dicionário e RE de menção; não infere relações factuais por coocorrência.'}
+    metodo = 'NER por dicionário e RE de menção'
+    if use_llm:
+        metodo += '; NER/RE adicional via LLM (só vínculos resolvidos no catálogo)'
+    metodo += '; não infere relações factuais por coocorrência.'
+    return {'documento':name,'sha256':digest,'trechos':count,'mencoes':mentions_count,
+            'mencoes_llm':mencoes_llm,'relacoes_llm':relacoes_llm,
+            'relacoes_ignoradas':relacoes_ignoradas,'erros_llm':erros_llm,
+            'chunks_com_llm':chunks_llm,'ambiguidades_nao_vinculadas':sorted(ambiguities),
+            'metodo':metodo}

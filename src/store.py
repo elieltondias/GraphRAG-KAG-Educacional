@@ -1,6 +1,6 @@
 import re
 import time
-from neo4j import GraphDatabase
+from neo4j import GraphDatabase, READ_ACCESS, WRITE_ACCESS
 from neo4j.exceptions import Neo4jError
 from src.config import Settings
 from src.embeddings import DIMENSION
@@ -49,10 +49,11 @@ class Store:
             connection_timeout=5)
         self.trace = []
 
-    def query(self, cypher, params=None, write=False):
+    def query(self, cypher, params=None, write=False, readonly=False):
         data = dict(params or {})
         data.setdefault('graph', self.settings.graph)
-        with self.driver.session(database=self.settings.database) as session:
+        mode = READ_ACCESS if readonly else WRITE_ACCESS
+        with self.driver.session(database=self.settings.database, default_access_mode=mode) as session:
             rows = [dict(record) for record in session.run(cypher, data)]
         if not write:
             self.trace.append({'cypher': cypher, 'params': data})

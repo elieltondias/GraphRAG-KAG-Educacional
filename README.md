@@ -54,6 +54,8 @@ Não use `down -v` se quiser preservar o banco e o cache: essa opção remove os
 - Upload de PDF textual/TXT: divisão em trechos, NER por dicionário do domínio, resolução de nomes não ambíguos e RE da relação `MENCIONA`.
 - Grafo interativo, fontes, caminhos, IDs consultados, consultas Cypher e exportação CSV/JSON.
 - Resposta determinística sem chave de IA; planejamento de filtros e redação por LLM opcionais.
+- **Cypher gerado por LLM em sandbox**: uma única instrução, `RETURN` obrigatório, bloqueio de escrita e de procedures fora de `db.`, limite de 100 linhas e transação `READ` imposta pelo servidor Neo4j.
+- **NER/RE via LLM opcional nos documentos**: entidades e relações extraídas do texto, vinculadas só quando resolvidas exatamente no catálogo (ambíguas/ignoradas são contabilizadas), com arestas `MENCIONA`/`SE_RELACIONA_COM` marcadas com `metodo=llm`, página e fonte.
 - Testes de unidade/integração e roteiro de avaliação comparando estratégias.
 
 ## 3. Dados incluídos e base completa

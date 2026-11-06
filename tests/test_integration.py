@@ -140,3 +140,40 @@ def test_louvain_communities_and_shortest_path(store):
         assert before is None
     finally:
         other.wipe(); other.close()
+
+
+def test_cypher_sandbox_runs_readonly_and_blocks_writes():
+    from neo4j.exceptions import Neo4jError
+    from src.llm import validate_cypher
+    s=Store(replace(Settings(),graph='sandbox_'+uuid.uuid4().hex,embedding='hash'))
+    try:
+        s.schema()
+        s.upsert_nodes('Teste',[{'id':'sb:1','props':{'id':'sb:1','name':'n','kind':'Teste'}}])
+        query=validate_cypher('MATCH (n:Entity) WHERE n.graph=$graph RETURN n.id AS id')
+        rows=s.query(query,readonly=True)
+        assert rows==[{'id':'sb:1'}]
+        with pytest.raises(Neo4jError):
+            s.query("MATCH (n:Entity {id:'sb:1', graph:$graph}) DELETE n",readonly=True)
+        assert s.count_nodes()==1
+    finally:
+        s.wipe(); s.close()
+
+
+def test_document_with_llm_ner_and_relation_extraction(store):
+    class FakeLLM:
+        enabled=True
+        def extract(self,chunk):
+            return {'entidades':['UFPB','João Pessoa','Entidade Que Não Existe'],
+                    'relacoes':[{'origem':'UFPB','relacao':'sediada em','destino':'João Pessoa'},
+                                {'origem':'Fantasma','relacao':'x','destino':'João Pessoa'}]}
+    result=ingest_document(store,'ner_llm.txt','A UFPB fica em João Pessoa.'.encode(),llm=FakeLLM())
+    assert result['chunks_com_llm']==1 and result['erros_llm']==0
+    assert result['mencoes_llm']==2
+    assert result['relacoes_llm']==1 and result['relacoes_ignoradas']==1
+    rel=store.query('MATCH (a:Entity)-[r:SE_RELACIONA_COM]->(b:Entity) WHERE a.graph=$graph '
+                    'RETURN a.id AS a,b.id AS b,r.relacao AS relacao,r.metodo AS metodo,r.trecho AS trecho')
+    assert len(rel)==1
+    assert rel[0]['relacao']=='sediada em' and rel[0]['metodo']=='llm'
+    assert rel[0]['a']=='2024:ies_579' and rel[0]['b']=='2024:municipio_2507507'
+    assert store.query('MATCH (a:Entity {id:\'2024:ies_579\'})<-[r:MENCIONA]-() '
+                       'WHERE a.graph=$graph AND r.metodo=\'llm\' RETURN count(r) AS n')[0]['n']>=1
