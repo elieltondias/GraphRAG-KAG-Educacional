@@ -117,3 +117,26 @@ def test_vector_ranking_by_cosine_similarity():
     finally:
         s.wipe()
         s.close()
+
+
+def test_louvain_communities_and_shortest_path(store):
+    from src.algorithms import louvain, shortest_path
+    summary=louvain(store)
+    assert summary['algorithm'] in {'gds.louvain','networkx.louvain'}
+    assert summary['nodes']==store.count_nodes()
+    assert summary['communities']>=1
+    labeled=store.query('MATCH (n:Entity) WHERE n.graph=$graph AND n.community IS NOT NULL RETURN count(n) AS n')[0]['n']
+    assert labeled==summary['nodes']
+    edge=store.query('MATCH (a:Entity)-[r]->(b:Entity) WHERE a.graph=$graph RETURN a.id AS a, b.id AS b LIMIT 1')[0]
+    path=shortest_path(store,edge['a'],edge['b'])
+    assert path['found'] and path['saltos']==1 and path['nos']
+    assert not shortest_path(store,'2024:ies_579','id_que_nao_existe:x')['found']
+    # Partição isolada: comunidades calculadas num grafo não afetam o outro
+    other=Store(replace(Settings(),graph='alg_'+uuid.uuid4().hex,embedding='hash'))
+    try:
+        other.schema()
+        other.upsert_nodes('Teste',[{'id':'alg:1','props':{'id':'alg:1','name':'n','kind':'Teste'}}])
+        before=other.query("MATCH (n:Entity {id:'alg:1', graph:$graph}) RETURN n.community AS c")[0]['c']
+        assert before is None
+    finally:
+        other.wipe(); other.close()

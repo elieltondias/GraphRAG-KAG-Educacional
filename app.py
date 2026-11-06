@@ -10,6 +10,7 @@ from src.ingest import ingest_lpg
 from src.documents import ingest_document
 from src.retrieval import Filters, retrieve, deterministic_answer, structured
 from src.llm import LLM
+from src.algorithms import louvain, shortest_path
 from src.visualization import render_graph
 
 st.set_page_config(page_title='NexoEdu · Microdados do ensino superior',page_icon='◈',layout='wide')
@@ -155,7 +156,7 @@ elif page=='Consultar':
         with tabs[0]:
             if result['graph']['nodes']:
                 components.html(render_graph(result['graph']),height=590,scrolling=False)
-                st.caption('Arraste os nós, use o zoom e passe o mouse para ver a fonte. O tamanho do nó usa PageRank calculado apenas no subgrafo recuperado.')
+                st.caption('Arraste os nós, use o zoom e passe o mouse para ver a fonte. O tamanho do nó usa PageRank calculado apenas no subgrafo recuperado. Cores por comunidade quando o Louvain já foi executado em Explorar dados.')
             else:
                 st.info('Nenhum caminho encontrado.')
         with tabs[1]:
@@ -196,6 +197,43 @@ elif page=='Explorar dados':
         st.caption('A localização é da oferta, não da sede. Uma oferta é uma combinação de curso, IES, território, modalidade e dimensão, conforme os IDs do repositório de origem.')
     with st.expander('Inventário do grafo'):
         st.dataframe(pd.DataFrame(store.stats()),hide_index=True)
+    with st.expander('Algoritmos de grafo'):
+        a,b = st.columns(2)
+        if a.button('Calcular comunidades (Louvain)'):
+            try:
+                with st.spinner('Executando Louvain sobre a partição atual...'):
+                    summary = louvain(store)
+                st.session_state['louvain'] = summary
+            except Exception as error:
+                st.error(str(error))
+        summary = st.session_state.get('louvain')
+        if summary:
+            st.caption(f"Algoritmo: {summary['algorithm']} · {summary['nodes']} nós · "
+                       f"{summary['communities']} comunidades · propriedade `community` gravada no grafo.")
+            st.dataframe(pd.DataFrame(summary['maiores']),hide_index=True,width='stretch')
+        st.divider()
+        st.write('Menor caminho entre duas entidades da partição (Cypher `shortestPath`, até 8 saltos).')
+        catalog = store.query("MATCH (n:Entity) WHERE n.graph=$graph AND n.kind IN "
+                              "['IES','Curso','Municipio','OfertaCurso'] "
+                              "RETURN n.id AS id, n.name AS name, n.kind AS kind ORDER BY n.kind, n.name LIMIT 400")
+        labels = {f"{row['name']} · {row['kind']} · {row['id']}": row['id'] for row in catalog}
+        c,d = st.columns(2)
+        origem = c.selectbox('Origem', list(labels), key='sp_origem')
+        destino = d.selectbox('Destino', list(labels), key='sp_destino', index=min(1, len(labels)-1))
+        if st.button('Encontrar menor caminho'):
+            try:
+                path = shortest_path(store, labels[origem], labels[destino])
+                if path['found']:
+                    st.session_state['shortest'] = path
+                else:
+                    st.session_state.pop('shortest', None)
+                    st.info('Não há caminho de até 8 saltos entre essas entidades na partição atual.')
+            except Exception as error:
+                st.error(str(error))
+        path = st.session_state.get('shortest')
+        if path and path.get('found'):
+            st.success(f"{path['saltos']} salto(s): {path['caminho']}")
+            st.dataframe(pd.DataFrame(path['nos']),hide_index=True,width='stretch')
 
 else:
     st.subheader('Microdados conectados, respostas rastreáveis')

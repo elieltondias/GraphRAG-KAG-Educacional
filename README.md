@@ -49,6 +49,7 @@ Não use `down -v` se quiser preservar o banco e o cache: essa opção remove os
 - Embeddings multilíngues locais de 384 dimensões. Modo lexical por hashing opcional para teste sem download.
 - Busca textual/vetorial, prioridade para nomes exatos e fusão por Reciprocal Rank Fusion; travessia de até dois saltos.
 - PageRank do subgrafo recuperado para ordenar os caminhos e dimensionar os nós.
+- **Algoritmos de grafo**: Louvain (GDS com fallback determinístico em NetworkX) gravando a propriedade `community`, e menor caminho (`shortestPath`) entre entidades da partição, com cores por comunidade na visualização.
 - Agregações Cypher parametrizadas de ofertas, matrículas, ingressantes e concluintes, com filtros.
 - Upload de PDF textual/TXT: divisão em trechos, NER por dicionário do domínio, resolução de nomes não ambíguos e RE da relação `MENCIONA`.
 - Grafo interativo, fontes, caminhos, IDs consultados, consultas Cypher e exportação CSV/JSON.

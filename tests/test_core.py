@@ -61,3 +61,15 @@ def test_chunking_has_no_loss_or_empty_chunk():
     assert all(0<len(c)<=1100 for c in result)
     assert ' '.join(result)==text.strip()
     assert list(batched(range(5),2))==[[0,1],[2,3],[4]]
+
+
+def test_louvain_networkx_detects_separate_communities_deterministically():
+    from src.algorithms import louvain_networkx
+    nodes=['a','b','c','d','isolado']
+    edges=[('a','b'),('c','d')]
+    first=louvain_networkx(nodes,edges)
+    second=louvain_networkx(nodes,edges)
+    assert first==second
+    assert first['a']==first['b'] and first['c']==first['d']
+    assert first['a']!=first['c']
+    assert first['isolado'] in set(first.values())
