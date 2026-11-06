@@ -112,8 +112,8 @@ if page=='Importar':
     if ready:
         with st.expander('Índices, restrições e metadados'):
             st.json(meta)
-            st.dataframe(pd.DataFrame(store.query('SHOW INDEXES')),hide_index=True)
-            st.dataframe(pd.DataFrame(store.query('SHOW CONSTRAINTS')),hide_index=True)
+            st.dataframe(pd.DataFrame(store.query('SHOW INDEXES')).astype(str),hide_index=True)
+            st.dataframe(pd.DataFrame(store.query('SHOW CONSTRAINTS')).astype(str),hide_index=True)
 
 elif page=='Consultar':
     st.write('Faça uma pergunta, acompanhe as evidências e explore o caminho até a fonte.')
