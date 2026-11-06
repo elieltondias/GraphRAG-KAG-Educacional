@@ -1,0 +1,11 @@
+:ID,:LABEL,CO_CINE_AREA_GERAL,NO_CINE_AREA_GERAL
+cine_area_geral_01,CineAreaGeral,01,Educação
+cine_area_geral_02,CineAreaGeral,02,Artes e humanidades
+cine_area_geral_03,CineAreaGeral,03,"Ciências sociais, comunicação e informação"
+cine_area_geral_04,CineAreaGeral,04,"Negócios, administração e direito"
+cine_area_geral_05,CineAreaGeral,05,"Ciências naturais, matemática e estatística"
+cine_area_geral_06,CineAreaGeral,06,Computação e Tecnologias da Informação e Comunicação (TIC)
+cine_area_geral_07,CineAreaGeral,07,"Engenharia, produção e construção"
+cine_area_geral_08,CineAreaGeral,08,"Agricultura, silvicultura, pesca e veterinária"
+cine_area_geral_09,CineAreaGeral,09,Saúde e bem-estar
+cine_area_geral_10,CineAreaGeral,10,Serviços

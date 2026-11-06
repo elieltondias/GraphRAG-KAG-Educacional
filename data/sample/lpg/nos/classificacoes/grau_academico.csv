@@ -1,0 +1,4 @@
+:ID,:LABEL,CO_GRAU,NO_GRAU
+grau_1,GrauAcademico,1,Bacharelado
+grau_2,GrauAcademico,2,Licenciatura
+grau_3,GrauAcademico,3,Tecnológico

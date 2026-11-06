@@ -1,0 +1,110 @@
+:ID,:LABEL,CO_CINE_ROTULO,NO_CINE_ROTULO,CO_CINE_AREA_DETALHADA
+cine_rotulo_0111P01,CineRotulo,0111P01,Processos escolares,0111
+cine_rotulo_0111P02,CineRotulo,0111P02,Psicopedagogia,0111
+cine_rotulo_0113E02,CineRotulo,0113E02,Educação especial formação de professor,0113
+cine_rotulo_0113P01,CineRotulo,0113P01,Pedagogia,0113
+cine_rotulo_0114A01,CineRotulo,0114A01,Artes formação de professor,0114
+cine_rotulo_0114A02,CineRotulo,0114A02,Artes visuais formação de professor,0114
+cine_rotulo_0114B01,CineRotulo,0114B01,Biologia formação de professor,0114
+cine_rotulo_0114C03,CineRotulo,0114C03,Ciências sociais formação de professor,0114
+cine_rotulo_0114E03,CineRotulo,0114E03,Educação física formação de professor,0114
+cine_rotulo_0114E06,CineRotulo,0114E06,Ensino profissionalizante em área específica formação de professor,0114
+cine_rotulo_0114F01,CineRotulo,0114F01,Filosofia formação de professor,0114
+cine_rotulo_0114G01,CineRotulo,0114G01,Geografia formação de professor,0114
+cine_rotulo_0114H01,CineRotulo,0114H01,História formação de professor,0114
+cine_rotulo_0114M01,CineRotulo,0114M01,Matemática formação de professor,0114
+cine_rotulo_0114M02,CineRotulo,0114M02,Música formação de professor,0114
+cine_rotulo_0114Q01,CineRotulo,0114Q01,Química formação de professor,0114
+cine_rotulo_0115L02,CineRotulo,0115L02,Letras espanhol formação de professor,0115
+cine_rotulo_0115L04,CineRotulo,0115L04,Letras inglês formação de professor,0115
+cine_rotulo_0115L12,CineRotulo,0115L12,Letras português espanhol formação de professor,0115
+cine_rotulo_0115L13,CineRotulo,0115L13,Letras português formação de professor,0115
+cine_rotulo_0115L14,CineRotulo,0115L14,Letras português francês formação de professor,0115
+cine_rotulo_0115L15,CineRotulo,0115L15,Letras português inglês formação de professor,0115
+cine_rotulo_0115L18,CineRotulo,0115L18,Letras português língua brasileira de sinais formação de professor,0115
+cine_rotulo_0188P01,CineRotulo,0188P01,Programas interdisciplinares abrangendo educação,0188
+cine_rotulo_0211D01,CineRotulo,0211D01,Design gráfico,0211
+cine_rotulo_0212D03,CineRotulo,0212D03,Design de interiores,0212
+cine_rotulo_0212D04,CineRotulo,0212D04,Design de produto,0212
+cine_rotulo_0221T01,CineRotulo,0221T01,Teologia,0221
+cine_rotulo_0222H01,CineRotulo,0222H01,História,0222
+cine_rotulo_0231L12,CineRotulo,0231L12,Letras português,0231
+cine_rotulo_0311E01,CineRotulo,0311E01,Economia,0311
+cine_rotulo_0312C02,CineRotulo,0312C02,Ciências sociais,0312
+cine_rotulo_0313P01,CineRotulo,0313P01,Psicologia,0313
+cine_rotulo_0321J01,CineRotulo,0321J01,Jornalismo,0321
+cine_rotulo_0322B01,CineRotulo,0322B01,Biblioteconomia,0322
+cine_rotulo_0388P01,CineRotulo,0388P01,"Programas interdisciplinares abrangendo ciências sociais, comunicação e informação",0388
+cine_rotulo_0399P01,CineRotulo,0399P01,"Programas abrangendo ciências sociais, comunicação e informação em processo de definição da classificação",0399
+cine_rotulo_0411C01,CineRotulo,0411C01,Contabilidade,0411
+cine_rotulo_0412G01,CineRotulo,0412G01,Gestão financeira,0412
+cine_rotulo_0413A01,CineRotulo,0413A01,Administração,0413
+cine_rotulo_0413G01,CineRotulo,0413G01,Gestão da produção,0413
+cine_rotulo_0413G02,CineRotulo,0413G02,Gestão da qualidade,0413
+cine_rotulo_0413G03,CineRotulo,0413G03,Gestão da saúde,0413
+cine_rotulo_0413G05,CineRotulo,0413G05,Gestão de negócios,0413
+cine_rotulo_0413G07,CineRotulo,0413G07,Gestão de pessoas,0413
+cine_rotulo_0413G08,CineRotulo,0413G08,Gestão de serviços,0413
+cine_rotulo_0413G09,CineRotulo,0413G09,Gestão do agronegócio,0413
+cine_rotulo_0413G11,CineRotulo,0413G11,Gestão hospitalar,0413
+cine_rotulo_0413G12,CineRotulo,0413G12,Gestão pública,0413
+cine_rotulo_0413L01,CineRotulo,0413L01,Logística,0413
+cine_rotulo_0414M01,CineRotulo,0414M01,Marketing,0414
+cine_rotulo_0414P01,CineRotulo,0414P01,Publicidade e propaganda,0414
+cine_rotulo_0414R01,CineRotulo,0414R01,Relações públicas,0414
+cine_rotulo_0416G01,CineRotulo,0416G01,Gestão comercial,0416
+cine_rotulo_0416N01,CineRotulo,0416N01,Negócios imobiliários,0416
+cine_rotulo_0421D01,CineRotulo,0421D01,Direito,0421
+cine_rotulo_0421S01,CineRotulo,0421S01,Serviços jurídicos e cartoriais,0421
+cine_rotulo_0488P01,CineRotulo,0488P01,"Programas interdisciplinares abrangendo negócios, administração e direito",0488
+cine_rotulo_0511B01,CineRotulo,0511B01,Biologia,0511
+cine_rotulo_0533F01,CineRotulo,0533F01,Física,0533
+cine_rotulo_0612B01,CineRotulo,0612B01,Banco de dados,0612
+cine_rotulo_0612D01,CineRotulo,0612D01,Defesa cibernética,0612
+cine_rotulo_0612G01,CineRotulo,0612G01,Gestão da tecnologia da informação,0612
+cine_rotulo_0612R01,CineRotulo,0612R01,Redes de computadores,0612
+cine_rotulo_0613C01,CineRotulo,0613C01,Ciência da computação,0613
+cine_rotulo_0613E01,CineRotulo,0613E01,Engenharia de software,0613
+cine_rotulo_0613I01,CineRotulo,0613I01,Inteligência artificial,0613
+cine_rotulo_0613S01,CineRotulo,0613S01,Sistemas de informação,0613
+cine_rotulo_0613S02,CineRotulo,0613S02,Sistemas para internet,0613
+cine_rotulo_0681C01,CineRotulo,0681C01,Ciência de dados,0681
+cine_rotulo_0681J01,CineRotulo,0681J01,Jogos digitais,0681
+cine_rotulo_0712E01,CineRotulo,0712E01,Engenharia ambiental,0712
+cine_rotulo_0712E02,CineRotulo,0712E02,Engenharia ambiental e sanitária,0712
+cine_rotulo_0712G01,CineRotulo,0712G01,Gestão ambiental,0712
+cine_rotulo_0712S01,CineRotulo,0712S01,Saneamento ambiental,0712
+cine_rotulo_0713E02,CineRotulo,0713E02,Energias renováveis,0713
+cine_rotulo_0713E05,CineRotulo,0713E05,Engenharia elétrica,0713
+cine_rotulo_0714A01,CineRotulo,0714A01,Automação industrial,0714
+cine_rotulo_0714E04,CineRotulo,0714E04,Engenharia de computação,0714
+cine_rotulo_0714S01,CineRotulo,0714S01,Sistemas biomédicos,0714
+cine_rotulo_0715E02,CineRotulo,0715E02,Engenharia mecânica,0715
+cine_rotulo_0725E02,CineRotulo,0725E02,Engenharia de produção,0725
+cine_rotulo_0731A02,CineRotulo,0731A02,Arquitetura e urbanismo,0731
+cine_rotulo_0732E01,CineRotulo,0732E01,Engenharia civil,0732
+cine_rotulo_0811A04,CineRotulo,0811A04,Agronomia,0811
+cine_rotulo_0841M01,CineRotulo,0841M01,Medicina veterinária,0841
+cine_rotulo_0911O01,CineRotulo,0911O01,Odontologia,0911
+cine_rotulo_0913E01,CineRotulo,0913E01,Enfermagem,0913
+cine_rotulo_0914B01,CineRotulo,0914B01,Biomedicina,0914
+cine_rotulo_0914R01,CineRotulo,0914R01,Radiologia,0914
+cine_rotulo_0915E01,CineRotulo,0915E01,Educação física,0915
+cine_rotulo_0915F01,CineRotulo,0915F01,Fisioterapia,0915
+cine_rotulo_0915N01,CineRotulo,0915N01,Nutrição,0915
+cine_rotulo_0915P01,CineRotulo,0915P01,Podologia,0915
+cine_rotulo_0915T01,CineRotulo,0915T01,Terapia ocupacional,0915
+cine_rotulo_0916F01,CineRotulo,0916F01,Farmácia,0916
+cine_rotulo_0917P01,CineRotulo,0917P01,Práticas integrativas,0917
+cine_rotulo_0918S01,CineRotulo,0918S01,Saúde coletiva,0918
+cine_rotulo_0918S02,CineRotulo,0918S02,Saúde pública,0918
+cine_rotulo_0923S01,CineRotulo,0923S01,Serviço social,0923
+cine_rotulo_1012E01,CineRotulo,1012E01,Estética e cosmética,1012
+cine_rotulo_1013G01,CineRotulo,1013G01,Gastronomia,1013
+cine_rotulo_1015T01,CineRotulo,1015T01,Turismo,1015
+cine_rotulo_1022S01,CineRotulo,1022S01,Segurança no trabalho,1022
+cine_rotulo_1032I01,CineRotulo,1032I01,Investigação e perícia,1032
+cine_rotulo_1032S02,CineRotulo,1032S02,Segurança privada,1032
+cine_rotulo_1032S03,CineRotulo,1032S03,Segurança pública,1032
+cine_rotulo_1032S04,CineRotulo,1032S04,Serviços penais,1032
+cine_rotulo_1041T02,CineRotulo,1041T02,Transporte terrestre,1041
